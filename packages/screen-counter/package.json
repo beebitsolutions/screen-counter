@@ -1,0 +1,41 @@
+{
+  "name": "@beebit/screen-counter",
+  "version": "0.0.0",
+  "description": "Count screens (routes + modals) in a Next.js project for budgeting and live demos.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "next",
+    "nextjs",
+    "screens",
+    "audit",
+    "budget",
+    "modal",
+    "routes"
+  ],
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.3"
+  }
+}

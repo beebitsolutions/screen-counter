@@ -1,0 +1,32 @@
+{
+  "name": "screen-counter-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo for @beebit/screen-counter (package + playground)",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r --filter ./packages/* build",
+    "dev": "pnpm -r --parallel --filter ./packages/* --filter ./apps/* dev",
+    "dev:package": "pnpm --filter @beebit/screen-counter dev",
+    "dev:playground": "pnpm --filter playground dev",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\"",
+    "clean": "pnpm -r exec rm -rf dist .next .turbo"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}
