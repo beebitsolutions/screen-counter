@@ -11,6 +11,7 @@ export default defineConfig([
     splitting: false,
     treeshake: true,
     target: 'node20',
+    external: ['react', 'react-dom', '@beebit/screen-counter/badge'],
   },
   {
     entry: { cli: 'src/cli/index.ts' },
@@ -30,7 +31,6 @@ export default defineConfig([
     entry: {
       plugin: 'src/plugin/index.ts',
       runtime: 'src/runtime/index.ts',
-      badge: 'src/badge/index.ts',
     },
     format: ['esm', 'cjs'],
     dts: true,
@@ -40,6 +40,18 @@ export default defineConfig([
     treeshake: true,
     target: 'node20',
     external: ['next', 'react', 'react-dom', 'webpack'],
+  },
+  {
+    entry: { badge: 'src/badge/index.tsx' },
+    format: ['esm', 'cjs'],
+    dts: true,
+    sourcemap: true,
+    clean: false,
+    splitting: false,
+    treeshake: false,
+    target: 'node20',
+    banner: { js: "'use client';" },
+    external: ['react', 'react-dom', 'next', '@beebit/screen-counter/runtime'],
   },
   {
     entry: { 'plugin/inject-loader': 'src/plugin/inject-loader.cjs' },

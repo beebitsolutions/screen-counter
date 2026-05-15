@@ -70,5 +70,15 @@ export default [
       },
     },
   },
+  {
+    files: ['packages/screen-counter/src/badge/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        window: 'readonly',
+        console: 'readonly',
+      },
+    },
+  },
   prettier,
 ];

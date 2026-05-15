@@ -6,6 +6,8 @@
  */
 export { VERSION } from './version.js';
 export { analyze } from './analyzer/index.js';
+export { ScreenCounterBadge } from '@beebit/screen-counter/badge';
+export type { ScreenCounterBadgeProps } from '@beebit/screen-counter/badge';
 export type {
   AnalysisResult,
   Config,
