@@ -53,5 +53,15 @@ export default [
       sourceType: 'module',
     },
   },
+  {
+    files: ['packages/screen-counter/src/cli/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+      },
+    },
+  },
   prettier,
 ];
