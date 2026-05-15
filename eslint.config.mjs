@@ -54,12 +54,19 @@ export default [
     },
   },
   {
-    files: ['packages/screen-counter/src/cli/**/*.{ts,tsx}'],
+    files: [
+      'packages/screen-counter/src/cli/**/*.{ts,tsx}',
+      'packages/screen-counter/src/plugin/**/*.{ts,tsx,cjs}',
+    ],
     languageOptions: {
       globals: {
         process: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
       },
     },
   },
