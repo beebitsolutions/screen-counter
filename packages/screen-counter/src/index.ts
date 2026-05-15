@@ -1,24 +1,17 @@
+/**
+ * Public entry point for `@beebit/screen-counter`.
+ *
+ * Anything exported here is part of the package's public API and is
+ * semver-relevant. See `documentation/SEMVER.md` for the policy.
+ */
 export const VERSION = '0.0.0';
 
-export interface ScreenInfo {
-  filePath: string;
-  kind: 'route' | 'modal' | 'forced' | 'disabled';
-  signals?: string[];
-}
-
-export interface AnalysisResult {
-  count: number;
-  routes: ScreenInfo[];
-  modals: ScreenInfo[];
-  disabled: ScreenInfo[];
-}
-
-export interface Config {
-  rootDir?: string;
-  include?: string[];
-  exclude?: string[];
-}
-
-export async function analyze(_rootDir: string, _config: Config = {}): Promise<AnalysisResult> {
-  throw new Error('analyze() not implemented yet. See Epic 2 in the plan.');
-}
+export { analyze } from './analyzer/index.js';
+export type {
+  AnalysisResult,
+  Config,
+  ScoringThreshold,
+  ScreenInfo,
+  ScreenKind,
+  Signal,
+} from './types.js';
