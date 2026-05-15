@@ -80,5 +80,26 @@ export default [
       },
     },
   },
+  {
+    files: ['apps/playground/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
+        Headers: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+      },
+    },
+  },
   prettier,
 ];
