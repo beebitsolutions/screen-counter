@@ -13,16 +13,25 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\"",
-    "clean": "pnpm -r exec rm -rf dist .next .turbo"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:snapshot:update": "vitest run -u packages/screen-counter/src/integration/playground.test.ts",
+    "e2e:install": "cd e2e && pnpm install --ignore-workspace",
+    "test:e2e": "cd e2e && pnpm exec playwright test",
+    "test:e2e:ui": "cd e2e && pnpm exec playwright test --ui",
+    "clean": "pnpm -r exec rm -rf dist .next .turbo coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
+    "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
   },
   "packageManager": "pnpm@9.12.0",
   "engines": {

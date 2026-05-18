@@ -9,7 +9,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { VERSION } from '@beebit/screen-counter';
 import RadixDialogExample from './components/RadixDialogExample';
 import HeadlessUIDialogExample from './components/HeadlessUIDialogExample';
 import MUIDialogExample from './components/MUIDialogExample';
@@ -89,7 +88,7 @@ export default function HomePage() {
     <main style={{ maxWidth: '64ch' }}>
       <h1>screen-counter playground</h1>
       <p>
-        Linked against <code>@beebit/screen-counter</code> v{VERSION}. The badge
+        Linked against <code>@beebit/screen-counter</code>. The badge
         in the top-right is auto-injected by the plugin and reads the analyzer
         result from the virtual runtime module.
       </p>

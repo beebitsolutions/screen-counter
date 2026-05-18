@@ -98,13 +98,7 @@ function transform(opts: WithScreenCounterOptions, cfg: NextConfigLike): NextCon
   const userWebpack = cfg['webpack'];
   const autoInject = opts.autoInject !== false;
 
-  const wrappedWebpack = async (config: AnyConfig, ctx: WebpackCtx): Promise<AnyConfig> => {
-    let out: AnyConfig = config;
-    if (isWebpackHookFn(userWebpack)) {
-      const r = await Promise.resolve(userWebpack(config, ctx) as unknown);
-      out = (r as AnyConfig | undefined) ?? config;
-    }
-
+  const decorate = (out: AnyConfig, ctx: WebpackCtx): void => {
     try {
       addAlias(out, generated);
       if (autoInject) addLoaderRule(out, rootDir, opts.badge);
@@ -138,7 +132,23 @@ function transform(opts: WithScreenCounterOptions, cfg: NextConfigLike): NextCon
         logInfo(`runtime seeded (count=${result.count})`, opts.verbose === true);
       })
       .catch((err: unknown) => logError(err));
+  };
 
+  const wrappedWebpack = (config: AnyConfig, ctx: WebpackCtx): AnyConfig | Promise<AnyConfig> => {
+    if (!isWebpackHookFn(userWebpack)) {
+      decorate(config, ctx);
+      return config;
+    }
+    const r = userWebpack(config, ctx) as unknown;
+    if (r && typeof (r as Promise<AnyConfig>).then === 'function') {
+      return (r as Promise<AnyConfig>).then((resolved) => {
+        const out = resolved ?? config;
+        decorate(out, ctx);
+        return out;
+      });
+    }
+    const out = (r as AnyConfig | undefined) ?? config;
+    decorate(out, ctx);
     return out;
   };
 

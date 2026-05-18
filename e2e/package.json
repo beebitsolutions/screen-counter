@@ -1,0 +1,16 @@
+{
+  "name": "screen-counter-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Playwright E2E suite for the screen-counter playground. Lives outside the workspace so @playwright/test does not become a peer-coupled dependency of Next inside the workspace store.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.49.0",
+    "typescript": "^5.6.3"
+  }
+}

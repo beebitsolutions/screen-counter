@@ -1,0 +1,178 @@
+{
+  "count": 17,
+  "routes": [
+    {
+      "kind": "route",
+      "path": "app/(marketing)/contact/page.tsx",
+      "route": "/contact",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/(marketing)/landing/page.tsx",
+      "route": "/landing",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/about/page.tsx",
+      "route": "/about",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/blog/[...slug]/page.tsx",
+      "route": "/blog/[...slug]",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/dashboard/page.tsx",
+      "route": "/dashboard",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/docs/[[...slug]]/page.tsx",
+      "route": "/docs/[[...slug]]",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/page.tsx",
+      "route": "/",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/users/[id]/page.tsx",
+      "route": "/users/[id]",
+      "signals": []
+    }
+  ],
+  "modals": [
+    {
+      "kind": "modal",
+      "path": "app/components/ChakraModalExample.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@chakra-ui/react",
+          "detail": "Modal"
+        }
+      ]
+    },
+    {
+      "kind": "forced",
+      "path": "app/components/ForcedInclude.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "escape-hatch:screen"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "app/components/HeadlessUIDialogExample.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@headlessui/react",
+          "detail": "Dialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "app/components/HomemadeModal.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "jsx-attr:role=dialog"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Modal",
+          "detail": "HomemadeModal"
+        },
+        {
+          "kind": "weak",
+          "rule": "react-dom:createPortal"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "app/components/MUIDialogExample.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@mui/material",
+          "detail": "Dialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "app/components/NestedModal.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@radix-ui/react-dialog"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Modal",
+          "detail": "NestedModal"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "app/components/RadixDialogExample.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@radix-ui/react-dialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "app/components/VaulDrawerExample.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:vaul"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/ui/dialog.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@radix-ui/react-dialog"
+        },
+        {
+          "kind": "strong",
+          "rule": "path:shadcn-ui"
+        }
+      ]
+    }
+  ],
+  "disabled": [
+    {
+      "kind": "disabled",
+      "path": "app/components/ForcedExclude.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "escape-hatch:disable"
+        }
+      ]
+    }
+  ]
+}

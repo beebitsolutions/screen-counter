@@ -9,10 +9,13 @@ export default [
     ignores: [
       '**/dist/**',
       '**/.next/**',
+      '**/.next-e2e/**',
       '**/node_modules/**',
       '**/coverage/**',
       '**/.turbo/**',
       '**/next-env.d.ts',
+      'e2e/playwright-report/**',
+      'e2e/test-results/**',
     ],
   },
   js.configs.recommended,
@@ -81,7 +84,46 @@ export default [
     },
   },
   {
-    files: ['apps/playground/**/*.{ts,tsx}'],
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        document: 'readonly',
+        window: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+    },
+  },
+  {
+    files: ['e2e/**/*.ts'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['vitest.config.ts', 'vitest.config.mts'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['apps/playground/**/*.{ts,tsx,mjs,cjs,js}'],
     languageOptions: {
       globals: {
         process: 'readonly',
