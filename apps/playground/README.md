@@ -1,16 +1,19 @@
-# playground
+# ProjectHub — admin dashboard fixture for `@beebit/screen-counter`
 
-Next.js 15 / App Router fixtures app for `@beebit/screen-counter`.
+A small Next.js 16 admin dashboard built with Tailwind v4 + shadcn/ui. It
+pretends to manage projects, members, activity, and reports — but its real
+job is to be the fixture suite that pins the analyzer's contract.
 
 The same files serve two purposes:
 
 - **Live demo**: `pnpm dev:playground` boots a Next.js app where the badge
   injected by `withScreenCounter` shows the current screen count for *this*
-  project. Every fixture renders a triggerable example so you can see the
-  modal markup in a real browser.
-- **Test fixtures**: the integration snapshot (planned for prompt 09) calls
+  project. The dashboard exposes a trigger for every modal/drawer fixture so
+  you can poke them in a real browser.
+- **Test fixtures**: the integration snapshot at
+  `packages/screen-counter/src/integration/playground.test.ts` calls
   `analyze('apps/playground')` and pins the exact set of routes, modals and
-  disabled entries listed below.
+  disabled entries listed below into `apps/playground/__snapshots__/analysis.json`.
 
 ## Total expected from `analyze()`
 
@@ -32,51 +35,56 @@ node packages/screen-counter/dist/cli.js apps/playground --verbose
 
 ## Inventory
 
+> Long-form rationale per fixture lives in
+> `documentation/dev-notes/06-fixtures-inventario.md`. Keep that file and
+> this one in sync.
+
 ### Block A — Routes (App Router)
 
-| #    | Path                                      | Expectation                              |
-| ---- | ----------------------------------------- | ---------------------------------------- |
-| A.1  | `app/page.tsx`                            | counts; route `/`                        |
-| A.2  | `app/about/page.tsx`                      | counts; route `/about`                   |
-| A.3  | `app/users/[id]/page.tsx`                 | counts; route `/users/[id]` (dynamic)    |
-| A.4  | `app/blog/[...slug]/page.tsx`             | counts; route `/blog/[...slug]`          |
-| A.5  | `app/docs/[[...slug]]/page.tsx`           | counts; route `/docs/[[...slug]]`        |
-| A.6  | `app/(marketing)/landing/page.tsx`        | counts; route `/landing` (group dropped) |
-| A.7  | `app/(marketing)/contact/page.tsx`        | counts; route `/contact`                 |
-| A.8  | `app/dashboard/layout.tsx`                | does NOT count (layout)                  |
-| A.9  | `app/dashboard/page.tsx`                  | counts; route `/dashboard`               |
-| A.10 | `app/dashboard/loading.tsx`               | does NOT count (loading)                 |
-| A.11 | `app/dashboard/error.tsx`                 | does NOT count (error)                   |
-| A.12 | `app/dashboard/not-found.tsx`             | does NOT count (not-found)               |
-| A.13 | `app/api/health/route.ts`                 | does NOT count (api route)               |
+| #    | Path                                                | Expectation                                       |
+| ---- | --------------------------------------------------- | ------------------------------------------------- |
+| A.1  | `app/page.tsx`                                      | counts; route `/`                                 |
+| A.2  | `app/about/page.tsx`                                | counts; route `/about`                            |
+| A.3  | `app/dashboard/projects/[id]/page.tsx`              | counts; route `/dashboard/projects/[id]` (dynamic) |
+| A.4  | `app/dashboard/activity/[...slug]/page.tsx`         | counts; route `/dashboard/activity/[...slug]` (catch-all) |
+| A.5  | `app/dashboard/reports/[[...slug]]/page.tsx`        | counts; route `/dashboard/reports/[[...slug]]` (optional catch-all) |
+| A.6  | `app/(marketing)/pricing/page.tsx`                  | counts; route `/pricing` (group dropped from URL) |
+| A.7  | `app/(marketing)/contact/page.tsx`                  | counts; route `/contact` (group dropped from URL) |
+| A.8  | `app/dashboard/page.tsx`                            | counts; route `/dashboard`                        |
+| A.9  | `app/layout.tsx`                                    | does NOT count (root layout)                      |
+| A.10 | `app/dashboard/layout.tsx`                          | does NOT count (layout)                           |
+| A.11 | `app/dashboard/loading.tsx`                         | does NOT count (loading)                          |
+| A.12 | `app/dashboard/error.tsx`                           | does NOT count (error)                            |
+| A.13 | `app/dashboard/not-found.tsx`                       | does NOT count (not-found)                        |
+| A.14 | `app/api/health/route.ts`                           | does NOT count (api route)                        |
 
 ### Block B — Modals by library
 
-| #   | Path                                                    | Expected signal(s)                                     |
-| --- | ------------------------------------------------------- | ------------------------------------------------------ |
-| B.1 | `app/components/RadixDialogExample.tsx`                 | strong: `import:@radix-ui/react-dialog`                |
-| B.2 | `app/components/HeadlessUIDialogExample.tsx`            | strong: `import:@headlessui/react` (Dialog)            |
-| B.3 | `app/components/MUIDialogExample.tsx`                   | strong: `import:@mui/material` (Dialog)                |
-| B.4 | `app/components/ChakraModalExample.tsx`                 | strong: `import:@chakra-ui/react` (Modal)              |
-| B.5 | `app/components/VaulDrawerExample.tsx`                  | strong: `import:vaul`                                  |
-| B.6 | `components/ui/dialog.tsx`                              | strong: `path:shadcn-ui` (+ Radix import for free)     |
+| #   | Path                                            | Expected signal(s)                                                                                  |
+| --- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| B.1 | `components/DeleteProjectDialog.tsx`            | strong `import:@radix-ui/react-dialog` + weak `name-suffix:Dialog`                                  |
+| B.2 | `components/EditProjectDialog.tsx`              | strong `import:@headlessui/react` (Dialog) + weak `name-suffix:Dialog`                              |
+| B.3 | `components/CreateProjectDialog.tsx`            | strong `import:@mui/material` (Dialog) + weak `name-suffix:Dialog`                                  |
+| B.4 | `components/InviteMemberModal.tsx`              | strong `import:@chakra-ui/react` (Modal) + weak `name-suffix:Modal`                                 |
+| B.5 | `components/FiltersDrawer.tsx`                  | strong `import:vaul` + weak `name-suffix:Drawer`                                                    |
+| B.6 | `components/ui/dialog.tsx`                      | strong `path:shadcn-ui` (the shadcn dialog primitive — generated by `shadcn add dialog`, do not edit by hand) |
 
 ### Block C — Homemade + edge cases
 
-| #   | Path                                                | Outcome                                                                    |
-| --- | --------------------------------------------------- | -------------------------------------------------------------------------- |
-| C.1 | `app/components/HomemadeModal.tsx`                  | **counts**: strong `jsx-attr:role=dialog` + weak suffix + weak portal      |
-| C.2 | `app/components/SoloPortalToast.tsx`                | does NOT count: only 1 weak signal (`react-dom:createPortal`)              |
-| C.3 | `app/components/LoginModalProvider.tsx`             | does NOT count: `Provider` suffix excluded                                 |
-| C.4 | `app/components/AppContext.tsx`                     | does NOT count: `Context` suffix excluded                                  |
-| C.5 | `app/components/NestedModal.tsx`                    | **counts as 1**: nested modal does not double-count                        |
+| #   | Path                                          | Outcome                                                                                                                      |
+| --- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| C.1 | `components/WelcomeTourModal.tsx`             | **counts**: strong `jsx-attr:role=dialog` + weak `name-suffix:Modal` + weak `react-dom:createPortal`                         |
+| C.2 | `components/ToastNotification.tsx`            | does NOT count: only 1 weak signal (`react-dom:createPortal`); basename `ToastNotification` is not in any suffix list        |
+| C.3 | `components/AuthModalProvider.tsx`            | does NOT count: `Provider` suffix excluded — final suffix wins, beats internal `createPortal`/`Modal` usage                  |
+| C.4 | `components/WorkspaceContext.tsx`             | does NOT count: `Context` suffix excluded                                                                                    |
+| C.5 | `components/ConfirmInExportDialog.tsx`        | **counts as 1**: nested Radix dialog inside the same file does not double-count                                              |
 
 ### Block D — Escape hatches
 
-| #   | Path                                            | Outcome                                                                  |
-| --- | ----------------------------------------------- | ------------------------------------------------------------------------ |
-| D.1 | `app/components/ForcedInclude.tsx`              | **counts as forced**: `data-screen-counter="screen"` on JSX root         |
-| D.2 | `app/components/ForcedExclude.tsx`              | lands in `result.disabled`: `data-screen-counter="disable"` on JSX root  |
+| #   | Path                                                | Outcome                                                                  |
+| --- | --------------------------------------------------- | ------------------------------------------------------------------------ |
+| D.1 | `components/KeyboardShortcutsCheatsheet.tsx`        | **counts as forced**: `data-screen-counter="screen"` on JSX root         |
+| D.2 | `components/InternalDebugPanel.tsx`                 | lands in `result.disabled`: `data-screen-counter="disable"` on JSX root  |
 
 ## How to run
 
@@ -86,23 +94,45 @@ pnpm build                  # build the package so its types resolve
 pnpm dev:playground         # → http://localhost:3000
 ```
 
-The badge in the top-right is auto-injected by the plugin. Change any fixture
-and the badge updates on save (HMR is wired by `src/plugin/hmr.ts`).
+The badge in the top-right is auto-injected by the plugin. Change any
+fixture and the badge updates on save (HMR is wired by `src/plugin/hmr.ts`).
+
+## Manual smoke-test path
+
+The fastest way to confirm every fixture is alive in the browser:
+
+1. Visit `/`, click **Open dashboard** → lands on `/dashboard`.
+2. On first visit, the **WelcomeTourModal** appears (homemade portal, role=dialog). Dismiss it.
+3. In the projects table, the **+ New project** button opens **CreateProjectDialog** (MUI).
+4. The **Filters** button opens **FiltersDrawer** (vaul).
+5. The **Export** button opens **ConfirmInExportDialog** (Radix → confirm action opens a nested Radix dialog).
+6. The per-row dropdown menu has **Edit project** (Headless UI), **Invite member** (Chakra), **Delete project** (Radix).
+7. Press `?` anywhere on a dashboard route → **KeyboardShortcutsCheatsheet** overlay (escape-hatch:screen).
+8. Click a project name → `/dashboard/projects/[id]` with breadcrumbs and Edit/Invite/Delete actions in the header.
+9. Sidebar → **Activity** → `/dashboard/activity/all` (catch-all). Hit a real segment (`/dashboard/activity/p-001`) to see filtering.
+10. Sidebar → **Reports** → `/dashboard/reports` (optional catch-all index). Open a report card → `/dashboard/reports/<slug>`.
+11. Public pages: `/` (landing), `/about`, `/pricing` (route group), `/contact` (route group).
+12. `/api/health` returns `{ status: 'ok', uptime: <number> }` (API route handler, not counted).
 
 ## Regenerating snapshots
 
-The integration snapshot lives outside this app (planned in prompt 09). When
-it lands, the workflow will be:
+The integration snapshot lives at
+`apps/playground/__snapshots__/analysis.json` and is consumed by
+`packages/screen-counter/src/integration/playground.test.ts`. Regenerate
+with:
 
 ```bash
-pnpm --filter @beebit/screen-counter test -- --update
+pnpm test:snapshot:update    # = vitest run -u packages/screen-counter/src/integration/playground.test.ts
 ```
 
-Until that prompt ships, this section is a placeholder.
+The test asserts `count === 17` **before** writing the snapshot, so a wrong
+count fails loudly instead of silently corrupting the snapshot. If the
+count is off, **find the fixture that misbehaved** — do not edit the
+snapshot to match.
 
 ## Adding fixtures
 
-See `documentation/dev-notes/06-fixtures-inventario.md` for the policy. Short
-version: **fixture first, then heuristic change, then test** — heuristic
-changes are breaking semver and must ship with a corresponding playground
-fixture and a unit test.
+See `documentation/dev-notes/06-fixtures-inventario.md` for the policy.
+Short version: **fixture first, then heuristic change, then test** —
+heuristic changes are breaking semver and must ship with a corresponding
+playground fixture and a unit test.

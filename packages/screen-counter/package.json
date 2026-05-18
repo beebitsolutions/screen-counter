@@ -29,13 +29,19 @@
     }
   },
   "bin": {
-    "@beebit/screen-counter": "./dist/cli.js"
+    "screen-counter": "./dist/cli.js"
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

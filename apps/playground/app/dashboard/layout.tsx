@@ -1,14 +1,17 @@
-/**
- * Fixture A.8 — Layout for /dashboard.
- * Expected: does NOT count (layouts never count).
- */
 import type { ReactNode } from 'react';
+import { DashboardShell } from '@/components/dashboard-shell';
+import { Toaster } from '@/components/ui/sonner';
+
+// The dashboard mixes client-only state (Chakra theme, localStorage tour gate,
+// keyboard shortcut overlay). Skip prerendering for every dashboard route.
+export const dynamic = 'force-dynamic';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <section style={{ borderLeft: '4px solid #d1d5db', paddingLeft: '1rem' }}>
-      <p style={{ color: '#6b7280', margin: 0 }}>(dashboard layout — not counted)</p>
-      {children}
-    </section>
+    <>
+      <DashboardShell>{children}</DashboardShell>
+      {/* bottom-left so it doesn't overlap the screen-counter badge (top-right). */}
+      <Toaster position="bottom-left" />
+    </>
   );
 }

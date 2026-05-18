@@ -1,21 +1,30 @@
-/**
- * Fixture A.11 — Error boundary for /dashboard.
- * Expected: does NOT count (error.tsx is a special file).
- */
 'use client';
 
-interface ErrorProps {
-  error: Error;
-  reset: () => void;
-}
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
-export default function DashboardError({ error, reset }: ErrorProps) {
+type Props = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
+export default function DashboardError({ error, reset }: Props) {
+  useEffect(() => {
+    console.error('[dashboard]', error);
+  }, [error]);
+
   return (
-    <div>
-      <p>Something broke: {error.message}</p>
-      <button type="button" onClick={reset}>
-        Try again
-      </button>
+    <div className="flex flex-1 items-center justify-center px-6 py-16">
+      <div className="max-w-md text-center">
+        <h2 className="text-2xl font-semibold text-foreground">Algo ha ido mal</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          El panel se ha encontrado con un error inesperado. Puedes reintentar sin
+          recargar la página.
+        </p>
+        <Button className="mt-6" onClick={reset}>
+          Reintentar
+        </Button>
+      </div>
     </div>
   );
 }

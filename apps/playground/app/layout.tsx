@@ -1,27 +1,19 @@
-import type { Metadata, Viewport } from 'next';
+import './globals.css';
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import AuthModalProvider from '@/components/AuthModalProvider';
 
 export const metadata: Metadata = {
-  title: 'screen-counter playground',
-  description: 'Fixtures for testing @beebit/screen-counter',
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
+  title: 'ProjectHub — demo de panel de administración',
+  description:
+    'Panel de administración para gestión de proyectos. También sirve como banco de fixtures para @beebit/screen-counter.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        style={{
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          margin: 0,
-          padding: '2rem',
-        }}
-      >
-        {children}
+    <html lang="es" suppressHydrationWarning>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <AuthModalProvider>{children}</AuthModalProvider>
       </body>
     </html>
   );

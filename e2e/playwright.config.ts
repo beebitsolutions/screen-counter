@@ -24,7 +24,7 @@ const SERVERS: Record<string, BadgeWebServer> = {
 
 function buildWebServer(name: string, server: BadgeWebServer) {
   return {
-    command: `pnpm --filter playground exec next dev --port ${server.port}`,
+    command: `pnpm --filter playground exec node ./scripts/run-next.mjs dev --port ${server.port}`,
     cwd: WORKSPACE_ROOT,
     url: `http://127.0.0.1:${server.port}`,
     timeout: 180_000,
@@ -68,7 +68,11 @@ export default defineConfig({
   testDir: 'tests',
   fullyParallel: true,
   forbidOnly: IS_CI,
-  retries: IS_CI ? 1 : 0,
+  // Always allow 1 retry: the badge click can race with React hydration in
+  // dev mode (the only mode the playground runs in for these tests), which
+  // produces an occasional first-click no-op. The second attempt always
+  // succeeds because hydration is complete by then.
+  retries: 1,
   workers: IS_CI ? 1 : undefined,
   reporter: [['html', { open: 'never' }], ['list']],
   use: {

@@ -9,8 +9,8 @@
     },
     {
       "kind": "route",
-      "path": "app/(marketing)/landing/page.tsx",
-      "route": "/landing",
+      "path": "app/(marketing)/pricing/page.tsx",
+      "route": "/pricing",
       "signals": []
     },
     {
@@ -21,8 +21,8 @@
     },
     {
       "kind": "route",
-      "path": "app/blog/[...slug]/page.tsx",
-      "route": "/blog/[...slug]",
+      "path": "app/dashboard/activity/[...slug]/page.tsx",
+      "route": "/dashboard/activity/[...slug]",
       "signals": []
     },
     {
@@ -33,8 +33,14 @@
     },
     {
       "kind": "route",
-      "path": "app/docs/[[...slug]]/page.tsx",
-      "route": "/docs/[[...slug]]",
+      "path": "app/dashboard/projects/[id]/page.tsx",
+      "route": "/dashboard/projects/[id]",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "app/dashboard/reports/[[...slug]]/page.tsx",
+      "route": "/dashboard/reports/[[...slug]]",
       "signals": []
     },
     {
@@ -42,29 +48,105 @@
       "path": "app/page.tsx",
       "route": "/",
       "signals": []
-    },
-    {
-      "kind": "route",
-      "path": "app/users/[id]/page.tsx",
-      "route": "/users/[id]",
-      "signals": []
     }
   ],
   "modals": [
     {
       "kind": "modal",
-      "path": "app/components/ChakraModalExample.tsx",
+      "path": "components/ConfirmInExportDialog.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@radix-ui/react-dialog"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Dialog",
+          "detail": "ConfirmInExportDialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/CreateProjectDialog.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@mui/material",
+          "detail": "Dialog"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Dialog",
+          "detail": "CreateProjectDialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/DeleteProjectDialog.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@radix-ui/react-dialog"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Dialog",
+          "detail": "DeleteProjectDialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/EditProjectDialog.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:@headlessui/react",
+          "detail": "Dialog"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Dialog",
+          "detail": "EditProjectDialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/FiltersDrawer.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "import:vaul"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Drawer",
+          "detail": "FiltersDrawer"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/InviteMemberModal.tsx",
       "signals": [
         {
           "kind": "strong",
           "rule": "import:@chakra-ui/react",
           "detail": "Modal"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Modal",
+          "detail": "InviteMemberModal"
         }
       ]
     },
     {
       "kind": "forced",
-      "path": "app/components/ForcedInclude.tsx",
+      "path": "components/KeyboardShortcutsCheatsheet.tsx",
       "signals": [
         {
           "kind": "strong",
@@ -74,18 +156,7 @@
     },
     {
       "kind": "modal",
-      "path": "app/components/HeadlessUIDialogExample.tsx",
-      "signals": [
-        {
-          "kind": "strong",
-          "rule": "import:@headlessui/react",
-          "detail": "Dialog"
-        }
-      ]
-    },
-    {
-      "kind": "modal",
-      "path": "app/components/HomemadeModal.tsx",
+      "path": "components/WelcomeTourModal.tsx",
       "signals": [
         {
           "kind": "strong",
@@ -94,7 +165,7 @@
         {
           "kind": "weak",
           "rule": "name-suffix:Modal",
-          "detail": "HomemadeModal"
+          "detail": "WelcomeTourModal"
         },
         {
           "kind": "weak",
@@ -104,58 +175,8 @@
     },
     {
       "kind": "modal",
-      "path": "app/components/MUIDialogExample.tsx",
-      "signals": [
-        {
-          "kind": "strong",
-          "rule": "import:@mui/material",
-          "detail": "Dialog"
-        }
-      ]
-    },
-    {
-      "kind": "modal",
-      "path": "app/components/NestedModal.tsx",
-      "signals": [
-        {
-          "kind": "strong",
-          "rule": "import:@radix-ui/react-dialog"
-        },
-        {
-          "kind": "weak",
-          "rule": "name-suffix:Modal",
-          "detail": "NestedModal"
-        }
-      ]
-    },
-    {
-      "kind": "modal",
-      "path": "app/components/RadixDialogExample.tsx",
-      "signals": [
-        {
-          "kind": "strong",
-          "rule": "import:@radix-ui/react-dialog"
-        }
-      ]
-    },
-    {
-      "kind": "modal",
-      "path": "app/components/VaulDrawerExample.tsx",
-      "signals": [
-        {
-          "kind": "strong",
-          "rule": "import:vaul"
-        }
-      ]
-    },
-    {
-      "kind": "modal",
       "path": "components/ui/dialog.tsx",
       "signals": [
-        {
-          "kind": "strong",
-          "rule": "import:@radix-ui/react-dialog"
-        },
         {
           "kind": "strong",
           "rule": "path:shadcn-ui"
@@ -166,7 +187,7 @@
   "disabled": [
     {
       "kind": "disabled",
-      "path": "app/components/ForcedExclude.tsx",
+      "path": "components/InternalDebugPanel.tsx",
       "signals": [
         {
           "kind": "strong",

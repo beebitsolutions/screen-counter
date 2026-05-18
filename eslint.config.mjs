@@ -140,6 +140,13 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        // DOM types and the React namespace are used as TS-only annotations by
+        // shadcn-generated primitives (e.g. components/ui/sonner.tsx uses
+        // `React.CSSProperties`). They are types, not runtime values, but
+        // ESLint's no-undef rule can't tell.
+        React: 'readonly',
+        KeyboardEvent: 'readonly',
+        HTMLElement: 'readonly',
       },
     },
   },

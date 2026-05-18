@@ -19,10 +19,13 @@ function sortSignals(signals: readonly Signal[]): Signal[] {
 }
 
 function isSortedByPath(list: readonly ScreenInfo[]): boolean {
+  // Match the analyzer's deterministic code-point comparison (analyzer/index.ts:byPath).
+  // localeCompare would case-fold ('W' > 'u') and disagree with the analyzer's '<' on
+  // mixed-case paths like 'components/WelcomeTourModal.tsx' vs 'components/ui/dialog.tsx'.
   for (let i = 1; i < list.length; i++) {
     const prev = list[i - 1]!.path;
     const curr = list[i]!.path;
-    if (prev.localeCompare(curr) > 0) return false;
+    if (prev > curr) return false;
   }
   return true;
 }
