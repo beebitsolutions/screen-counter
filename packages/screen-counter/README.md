@@ -2,44 +2,67 @@
 
 [![npm version](https://img.shields.io/npm/v/@beebit/screen-counter.svg)](https://www.npmjs.com/package/@beebit/screen-counter)
 [![CI](https://github.com/beebitsolutions/screen-counter/actions/workflows/ci.yml/badge.svg)](https://github.com/beebitsolutions/screen-counter/actions/workflows/ci.yml)
-[![license](https://img.shields.io/badge/license-UNLICENSED-red)](#license)
+[![license](https://img.shields.io/badge/license-MIT-blue)](#license)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](#compatibility)
 
 > Count screens (routes + modals) in a Next.js project — for auditable
 > budgets and live `X/Y screens` demos.
 
-## What is this?
+## Features
 
-A small library that walks a Next.js project, counts each App-Router
-`page.tsx` plus each modal component (Radix, Headless UI, MUI, Chakra,
-vaul, shadcn, custom), and produces a deterministic report. Ships as a
-CLI for budgeting and a Next.js plugin + React badge for live demos.
+- **CLI for budgeting.** `npx @beebit/screen-counter` produces an auditable
+  report (human-readable or JSON) of every route and every modal in any
+  Next.js project. Drop the JSON straight into a quote.
+- **Next.js plugin for live demos.** One line in `next.config.mjs` injects a
+  floating `X/Y screens` badge that updates via HMR as you add or remove
+  screens.
+- **Modal heuristics that match real codebases.** Detects modals from Radix,
+  Headless UI, MUI, Chakra, vaul and shadcn primitives — plus hand-rolled
+  dialogs (via `role="dialog"`, `createPortal`, naming conventions).
+- **Kebab-case / snake_case / PascalCase aware.** `LoginModal.tsx`,
+  `login-modal.tsx` and `login_modal.tsx` all trigger the same signal.
+- **shadcn re-export tracing.** Consumers that import from local primitives
+  (`@/components/ui/dialog`) inherit the primitive's strong signal — so
+  apps built on shadcn count correctly out of the box.
+- **Escape hatches.** Force inclusion or exclusion of any component with a
+  `data-screen-counter` attribute when heuristics miss or over-trigger.
+- **Zero telemetry.** No data is sent anywhere.
+
+## Compatibility
+
+| What                         | Status                                                              |
+| ---------------------------- | ------------------------------------------------------------------- |
+| Next.js 15 / 16              | Supported (CI matrix).                                              |
+| Next.js ≤ 14                 | Not supported.                                                      |
+| App Router                   | Supported by default.                                               |
+| Pages Router                 | Supported via `pagesRouter: true` (off by default).                 |
+| Webpack                      | Supported.                                                          |
+| Turbopack                    | **Not supported.** Plugin auto-disables with a warning. On Next.js 16 (Turbopack default) opt out with `next dev --webpack` / `next build --webpack`. |
+| Node.js                      | `>= 20`                                                             |
 
 ## Install
 
 ```bash
-# npm
 npm install --save-dev @beebit/screen-counter
-
-# pnpm
+# or
 pnpm add -D @beebit/screen-counter
-
-# yarn
+# or
 yarn add -D @beebit/screen-counter
 ```
 
-Peer dependencies: `next >= 14`, `react >= 18`, `react-dom >= 18` (the
-last two are optional and only needed when you mount the badge).
+Peer dependencies: `next >= 15`. `react >= 18` and `react-dom >= 18` are
+needed only when you mount the badge — they are declared as optional
+peers.
 
-## CLI usage
+## Quick start
 
-Audit any Next.js project with a one-liner:
+### CLI — audit a project for budgeting
+
+Run it on any Next.js project, no setup required:
 
 ```bash
 npx @beebit/screen-counter
 ```
-
-<!-- verified — run from the monorepo root against apps/playground -->
 
 ```
 @beebit/screen-counter — analyzing /path/to/your-app
@@ -51,21 +74,15 @@ npx @beebit/screen-counter
   25 screens total
 ```
 
-Useful flags:
+Export the report as JSON to attach to a budget:
 
 ```bash
 npx @beebit/screen-counter --json --out reports/screens.json
-npx @beebit/screen-counter --verbose
-npx @beebit/screen-counter --watch
 ```
 
-Full flag reference: see [`documentation/dev-notes/03-cli-referencia.md`](../../documentation/dev-notes/03-cli-referencia.md).
+### Plugin — live badge in a Next.js app
 
-## Plugin usage
-
-One line in `next.config.mjs`:
-
-<!-- verified — same shape used by apps/playground/next.config.mjs -->
+Wrap your config in `next.config.mjs`:
 
 ```js
 import { withScreenCounter } from '@beebit/screen-counter/plugin';
@@ -78,78 +95,132 @@ const nextConfig = {
 export default withScreenCounter({})(nextConfig);
 ```
 
-The plugin runs `analyze()` at build/dev time, injects a
-`<ScreenCounterBadge />` into your **App Router** root layout, and refreshes
-the count via HMR when you add or remove screens.
+Start dev:
 
-Pages Router projects: opt in with `analyzer.pagesRouter: true` (or
-`pagesRouter: true` in `screen-counter.config.mjs`). The analyzer counts
-every `pages/**/*.{tsx,jsx,ts,js}` and skips `_app`, `_document`, `_error`
-and `api/*`. Routes that collide with App Router routes surface as
-warnings.
+```bash
+next dev            # Next.js 15
+next dev --webpack  # Next.js 16 (Turbopack is the default; opt out with --webpack)
+```
+
+The badge appears in the corner of every page, refreshes via HMR, and
+shows green / amber / red depending on how close the count is to the
+configured limit.
+
+## CLI reference
+
+| Flag                 | Purpose                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| `--json`             | Print structured JSON to stdout (no colours, no decoration).             |
+| `--out <path>`       | Write the report to a file. Creates intermediate directories.            |
+| `--verbose`          | Per-component breakdown with the signals each one fired.                 |
+| `--watch`            | Recompute on file changes (`chokidar`, 150 ms debounce, clean SIGINT).   |
+| `--config <path>`    | Explicit path to a `screen-counter.config.{mjs,cjs,js}` file.            |
+| `--help` / `-h`      | Print full help.                                                         |
+| `--version` / `-v`   | Print the package version.                                               |
+
+Exit codes: `0` ok · `1` analyzer error · `2` config error.
 
 ## Configuration
 
-`withScreenCounter(options)`:
+### `withScreenCounter(options)`
 
-| Option        | Type           | Default | Notes                                                                       |
-| ------------- | -------------- | ------- | --------------------------------------------------------------------------- |
-| `analyzer`    | `Config`       | `{}`    | Forwarded to `analyze()`. Same schema as `screen-counter.config.{mjs,cjs,js}`. Set `analyzer.pagesRouter: true` to enable Pages Router discovery. |
-| `autoInject`  | `boolean`      | `true`  | Disable to mount `<ScreenCounterBadge />` manually.                          |
-| `badge`       | `BadgeOptions` | —       | Forwarded into the auto-injected badge.                                     |
-| `verbose`     | `boolean`      | `false` | Print `[@beebit/screen-counter]` info lines on each analyzer run.            |
+| Option        | Type           | Default | Notes                                                                                                                                              |
+| ------------- | -------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `analyzer`    | `Config`       | `{}`    | Forwarded to `analyze()`. Same schema as `screen-counter.config.{mjs,cjs,js}`. Set `analyzer.pagesRouter: true` to enable Pages Router discovery.  |
+| `autoInject`  | `boolean`      | `true`  | Disable to mount `<ScreenCounterBadge />` manually.                                                                                                |
+| `badge`       | `BadgeOptions` | —       | Forwarded into the auto-injected badge.                                                                                                            |
+| `verbose`     | `boolean`      | `false` | Print `[@beebit/screen-counter]` info lines on each analyzer run.                                                                                  |
 
-Optional repo-level config — drop a `screen-counter.config.mjs` at the
-project root and the CLI / plugin will pick it up:
+### `screen-counter.config.mjs`
+
+Optional repo-level config. Drop one of `screen-counter.config.{mjs,cjs,js}`
+at the project root and both the CLI and the plugin will pick it up:
 
 ```js
 // screen-counter.config.mjs
 export default {
+  // Extra module sources that trigger the strong "import:<lib>" signal.
   modalLibraries: ['@mantine/core'],
+
+  // Last-word suffixes (kebab/snake/Camel) that exclude a component from
+  // modal counting even if heuristics fire. Default: Provider, Context, Wrapper.
   excludeSuffixes: ['Provider', 'Context', 'Wrapper', 'Layout'],
+
+  // How many of each signal kind are needed to count as a modal.
+  // Default: 1 strong OR 2 weak.
   scoringThreshold: { strong: 1, weak: 2 },
+
+  // Enable Pages Router discovery (off by default).
+  pagesRouter: false,
+
+  // Globs added to / removed from the default file walker.
+  include: [],
+  exclude: [],
 };
 ```
 
-Full schema and zone-grey decisions: [`documentation/dev-notes/02-heuristicas-modales.md`](../../documentation/dev-notes/02-heuristicas-modales.md).
+All fields are optional. A config with no overrides is equivalent to no
+config at all.
 
-## Counting rules (summary)
+### Environment variables
 
-A screen is **defined**, not used — a modal reused 12 times still counts
+| Variable                            | Values                          | Default | Effect                                                  |
+| ----------------------------------- | ------------------------------- | ------- | ------------------------------------------------------- |
+| `NEXT_PUBLIC_SCREEN_COUNTER_LIMIT`  | integer `>= 0`                  | `20`    | Default badge limit; threshold for amber/red colouring. |
+| `NEXT_PUBLIC_SCREEN_COUNTER_SHOW`   | `auto` \| `always` \| `never`   | `auto`  | Visibility policy. `auto` = visible in dev only.        |
+
+Both require the `NEXT_PUBLIC_` prefix so Next.js inlines them at build time.
+
+## How counting works
+
+A screen is **defined**, not used. A modal reused 12 times still counts
 once.
+
+### Routes
 
 - Every `app/**/page.{tsx,jsx,ts,js}` (App Router) and, when
   `pagesRouter: true`, every `pages/**/*.{tsx,jsx,ts,js}` excluding
   `_app`, `_document`, `_error` and `api/*`.
-- Every component triggering **1 strong signal** or **2 weak signals**:
-  - **Strong**: import from a known modal lib (Radix, Headless UI, MUI,
-    Chakra, vaul, shadcn), a JSX root with `role="dialog"` /
-    `aria-modal="true"`, or a local import of a shadcn primitive
-    (`@/components/ui/dialog` and similar — the consumer inherits the
-    primitive's strong signal via `reexport:<source>`).
-  - **Weak**: the **last word** of the component name or file basename is
-    `Modal`/`Dialog`/`Drawer`/`Sheet`/`Popup`/`Lightbox`/`Overlay`, or
-    the file uses `createPortal` from `react-dom`. The last-word match is
-    casing-insensitive: `LoginModal.tsx`, `login-modal.tsx` and
-    `login_modal.tsx` all qualify.
+- Dynamic routes (`[id]`, `[...slug]`, `[[...slug]]`) and route groups
+  (`(group)`) each count once.
 
-Dynamic routes (`[id]`, `[...slug]`, `[[...slug]]`) and route groups
-(`(group)`) each count once. Detail: see the devs guide.
+### Modals — heuristics
 
-## What does NOT count
+A component is counted as a modal if it fires **one strong signal** or
+**two weak signals**.
+
+**Strong signals**
+
+- Import from a known modal library: `@radix-ui/react-dialog`,
+  `@headlessui/react` (`Dialog`), `@mui/material` (`Modal`/`Dialog`/`Drawer`),
+  `@chakra-ui/react` (`Modal`/`Drawer`), `vaul`, shadcn pattern
+  (`components/ui/dialog.tsx` and similar primitives).
+- JSX root with `role="dialog"` or `aria-modal="true"`.
+- **Re-export tracing**: the file imports a local shadcn primitive (e.g.
+  `@/components/ui/dialog`). The consumer inherits the primitive's strong
+  signal via `reexport:<source>`.
+
+**Weak signals**
+
+- The **last word** of the component name or file basename is one of
+  `Modal`, `Dialog`, `Drawer`, `Sheet`, `Popup`, `Lightbox`, `Overlay`.
+  The match is kebab/snake/Camel-case aware: `LoginModal.tsx`,
+  `login-modal.tsx` and `login_modal.tsx` all qualify.
+- `createPortal` is imported from `react-dom` and called.
+
+### What does NOT count
 
 - `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`,
   `template.tsx`, `default.tsx`, `route.ts`.
 - `_app`, `_document`, `_error`, `api/*`.
+- Components whose last word is a default exclusion suffix:
+  `Provider`, `Context`, `Wrapper`. The same kebab/snake-aware match
+  applies — `LoginModalProvider`, `login-modal-provider.tsx` and
+  `auth_modal_context.tsx` are all excluded.
 - Parallel routes (`@slot`) and intercepted routes (`(.)foo`) — skipped
-  with a warning, decision deferred.
-- Components whose name's or basename's **last word** is a default
-  exclusion suffix: `Provider`, `Context`, `Wrapper`. The same
-  kebab/snake-aware match applies — `LoginModalProvider`,
-  `login-modal-provider.tsx` and `auth_modal_context.tsx` are all
-  excluded.
+  with a warning.
 
-## Escape hatches
+### Escape hatches
 
 Two `data-screen-counter` attributes override the heuristic on the JSX
 root:
@@ -162,62 +233,50 @@ return <div data-screen-counter="disable">…</div>;
 return <div data-screen-counter="screen">…</div>;
 ```
 
-The exclusion suffix list still wins: `LoginModalProvider` with
+The exclusion suffix list always wins: a `LoginModalProvider` with
 `data-screen-counter="screen"` is still excluded.
-
-## Environment variables
-
-| Variable                            | Values                         | Default | Effect                                                  |
-| ----------------------------------- | ------------------------------ | ------- | ------------------------------------------------------- |
-| `NEXT_PUBLIC_SCREEN_COUNTER_LIMIT`  | integer `>= 0`                 | `20`    | Default badge limit; threshold for amber/red colouring. |
-| `NEXT_PUBLIC_SCREEN_COUNTER_SHOW`   | `auto` \| `always` \| `never`  | `auto`  | Visibility policy. `auto` = dev only.                   |
-
-Both require the `NEXT_PUBLIC_` prefix so Next inlines them at build time.
-
-## Compatibility
-
-| What                | v1 status                                                              |
-| ------------------- | ---------------------------------------------------------------------- |
-| Next.js 15 / 16     | Supported (CI matrix).                                                 |
-| Next.js ≤ 14        | Not supported.                                                         |
-| App Router          | Supported.                                                             |
-| Pages Router        | Supported via `pagesRouter: true` (off by default).                    |
-| Turbopack           | **Not supported in v1.** Plugin auto-disables with a warning. On Next 16 (Turbopack default) opt out with `next dev --webpack` / `next build --webpack`. Tracked as `SC-056`. |
-| Node                | `>= 20`.                                                                |
 
 ## Versioning policy
 
-We follow a pragmatic semver — **heuristic changes that lower counts are
-MAJOR** because they invalidate already-quoted budgets. See
-[`documentation/SEMVER.md`](../../documentation/SEMVER.md).
+A pragmatic semver, tailored to a tool whose output can affect budgets
+that are already closed with clients:
+
+| Bump  | When                                                                                                                       |
+| ----- | -------------------------------------------------------------------------------------------------------------------------- |
+| MAJOR | A change **reduces or alters** what was counted before. Existing projects may see lower or differently-classified counts.  |
+| MINOR | A change **only adds** detection (new library, new heuristic, opt-in feature). Old counts stay equal or grow.              |
+| PATCH | Bug fixes and improvements that **do not change the count** observable from the outside.                                   |
+
+Heuristic-driven changes that lower counts are explicitly MAJOR, even
+when framed internally as bug fixes — what matters is the observable
+effect on budgets, not intent.
 
 ## Privacy
 
-The package sends **no telemetry** — no usage data, no errors, no counts.
+The package sends **no telemetry**. No usage data, no errors, no counts.
 
 ## License
 
-`UNLICENSED` — pending license decision. The package is **not yet
-published to npm**. See `documentation/preguntas-screen-counter.md §1`.
+[MIT](./LICENSE) © Beebit Solutions.
 
 ## Links
 
-- Devs guide: [`documentation/guides/02-modo-plugin-devs.md`](../../documentation/guides/02-modo-plugin-devs.md)
-- PM/sales guide: [`documentation/guides/01-modo-presupuesto-pm.md`](../../documentation/guides/01-modo-presupuesto-pm.md)
-- Project plan & open questions: [`documentation/`](../../documentation/)
-- Issues / discussions: <!-- TODO: link once the public repo is created -->
+- Source: <https://github.com/beebitsolutions/screen-counter>
+- Issues: <https://github.com/beebitsolutions/screen-counter/issues>
+- Changelog: <https://github.com/beebitsolutions/screen-counter/blob/dev/packages/screen-counter/CHANGELOG.md>
+- Example app (fixtures + live badge demo): <https://github.com/beebitsolutions/screen-counter/tree/dev/apps/playground>
 
 ---
 
 ## Versión en español
 
 `@beebit/screen-counter` cuenta las pantallas (rutas + modales) de un
-proyecto Next.js. Sirve para dos cosas:
+proyecto Next.js, con dos modos de uso:
 
 - **Modo presupuesto (CLI)**: `npx @beebit/screen-counter` genera un
-  reporte auditable para anexar a presupuestos.
-- **Modo demo (plugin + badge)**: un badge flotante "X/Y pantallas" que
-  ves durante el desarrollo y, opcionalmente, en demos a cliente.
+  informe auditable para anexar a presupuestos.
+- **Modo demo (plugin + badge)**: badge flotante "X/Y pantallas" en el
+  navegador durante desarrollo y, opcionalmente, en demos a cliente.
 
 ### Instalación
 
@@ -229,20 +288,8 @@ pnpm add -D @beebit/screen-counter
 
 ```bash
 npx @beebit/screen-counter
-```
 
-```
-@beebit/screen-counter — analyzing /ruta/a/tu-app
-✓ 12 routes
-✓ 13 modals (radix: 2, reexport:components/ui/dialog.tsx: 2, role: 2, aria: 1, chakra: 1, forced: 1, headlessui: 1, mui: 1, shadcn: 1, vaul: 1)
-✓ 1 component excluded manually
-─────────────────
-  25 screens total
-```
-
-Exportar a JSON para presupuesto:
-
-```bash
+# Exportar JSON
 npx @beebit/screen-counter --json --out reports/screens.json
 ```
 
@@ -251,50 +298,73 @@ npx @beebit/screen-counter --json --out reports/screens.json
 ```js
 import { withScreenCounter } from '@beebit/screen-counter/plugin';
 
-export default withScreenCounter({})({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   transpilePackages: ['@beebit/screen-counter'],
-});
+};
+
+export default withScreenCounter({})(nextConfig);
 ```
 
-### Qué cuenta
+Arranca con `next dev` (Next 15) o `next dev --webpack` (Next 16, hace
+falta opt-out de Turbopack porque el plugin solo soporta webpack en v1).
 
-- Cada `app/**/page.tsx` (App Router) y, si activas
-  `pagesRouter: true`, cada `pages/**/*.{tsx,jsx,ts,js}` excluyendo
-  `_app`, `_document`, `_error` y `api/*` (Pages Router).
-- Cada componente con **1 señal fuerte** o **2 señales débiles** (libs
-  conocidas de modales, `role="dialog"`, sufijos `Modal`/`Dialog`/…,
-  `createPortal`, o `reexport:<source>` cuando reexportas una primitiva
-  local que ya disparó una señal fuerte — típicamente `components/ui/dialog`).
-- Las rutas dinámicas y los grupos `(group)` cuentan **1** vez por
-  definición, no por uso.
+### Qué cuenta como pantalla
+
+- Cada `app/**/page.tsx` (App Router) y, si activas `pagesRouter: true`,
+  cada `pages/**/*.{tsx,jsx,ts,js}` excluyendo `_app`, `_document`,
+  `_error` y `api/*`.
+- Cada componente con **1 señal fuerte** o **2 señales débiles**:
+  importar una librería conocida de modales, `role="dialog"`,
+  `createPortal`, sufijo `Modal`/`Dialog`/etc, o reexportar una primitiva
+  local de shadcn.
+- Rutas dinámicas y grupos `(group)` cuentan **1 vez** por definición,
+  no por uso.
 
 ### Qué NO cuenta
 
 - `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`,
   `template.tsx`, `default.tsx`, `route.ts`.
 - `_app`, `_document`, `_error`, `api/*`.
-- Componentes con sufijo `Provider`, `Context`, `Wrapper`
+- Componentes cuyo último segmento es `Provider`, `Context` o `Wrapper`
   (`LoginModalProvider` **no** cuenta).
 - Componentes con `data-screen-counter="disable"` en su raíz JSX.
 
+### Escape hatches
+
+`data-screen-counter="screen"` fuerza la inclusión; `="disable"` fuerza
+la exclusión. La lista de sufijos excluidos gana sobre `="screen"`.
+
+### Variables de entorno
+
+| Variable                            | Valores                       | Default | Efecto                                                  |
+| ----------------------------------- | ----------------------------- | ------- | ------------------------------------------------------- |
+| `NEXT_PUBLIC_SCREEN_COUNTER_LIMIT`  | entero `>= 0`                 | `20`    | Límite del badge (umbral verde/ámbar/rojo).             |
+| `NEXT_PUBLIC_SCREEN_COUNTER_SHOW`   | `auto` \| `always` \| `never` | `auto`  | Política de visibilidad. `auto` = visible solo en dev.  |
+
 ### Compatibilidad
 
-Next 15 y 16 sobre webpack. App Router soportado por defecto; Pages
-Router opcional con `pagesRouter: true`. **Turbopack no soportado en
-v1** — el plugin se desactiva con un aviso (en Next 16, opta por
-webpack con `next dev --webpack` / `next build --webpack`). Node `>= 20`.
+Next.js 15 y 16 sobre webpack. App Router por defecto, Pages Router
+opt-in con `pagesRouter: true`. **Turbopack no soportado en v1.**
+Node `>= 20`.
 
 ### Política de versionado
 
-Semver pragmático: cualquier cambio que **baje el conteo** de proyectos
-existentes es **MAJOR** porque rompe presupuestos cerrados. Detalles en
-[`documentation/SEMVER.md`](../../documentation/SEMVER.md).
+Semver pragmático adaptado a un paquete cuyo output afecta presupuestos:
+
+| Bump  | Cuándo se aplica                                                             |
+| ----- | ---------------------------------------------------------------------------- |
+| MAJOR | Cambios que **reducen o alteran** lo que se contaba antes.                   |
+| MINOR | Cambios que **solo añaden** detección o features opt-in.                     |
+| PATCH | Bugs y mejoras que **no cambian el conteo** observable.                      |
 
 ### Licencia
 
-`UNLICENSED` mientras el equipo decide. No se publica en npm hasta entonces.
+[MIT](./LICENSE) © Beebit Solutions.
 
-### Más documentación
+### Enlaces
 
-- Guía para PM/ventas: [`documentation/guides/01-modo-presupuesto-pm.md`](../../documentation/guides/01-modo-presupuesto-pm.md)
-- Guía para desarrolladores: [`documentation/guides/02-modo-plugin-devs.md`](../../documentation/guides/02-modo-plugin-devs.md)
+- Código: <https://github.com/beebitsolutions/screen-counter>
+- Issues: <https://github.com/beebitsolutions/screen-counter/issues>
+- Changelog: <https://github.com/beebitsolutions/screen-counter/blob/dev/packages/screen-counter/CHANGELOG.md>
+- Demo viva (fixtures + badge): <https://github.com/beebitsolutions/screen-counter/tree/dev/apps/playground>
