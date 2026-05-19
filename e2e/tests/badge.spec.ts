@@ -36,8 +36,11 @@ test.describe('badge — default project (chromium)', () => {
   test('renders with the correct count', async ({ page }) => {
     const root = badge(page);
     await expect(root).toBeVisible();
-    await expect(root).toContainText(/17\/\d+ screens/);
-    await expect(root).toContainText('17/20 screens');
+    // Wait for hydration: the runtime virtual module is client-side, so SSR
+    // initially paints `0/...` and React swaps it on the first effect.
+    // CI runners are slower than local; bump the wait window.
+    await expect(root).toContainText(/25\/\d+ screens/, { timeout: 15_000 });
+    await expect(root).toContainText('25/20 screens');
   });
 
   test('hide button removes the badge and the choice persists', async ({ page }) => {

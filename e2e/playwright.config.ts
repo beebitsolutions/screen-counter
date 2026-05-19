@@ -17,7 +17,9 @@ interface BadgeWebServer {
 const SERVERS: Record<string, BadgeWebServer> = {
   chromium: { port: 3000 },
   'show-never': { port: 3010, env: { NEXT_PUBLIC_SCREEN_COUNTER_SHOW: 'never' } },
-  'limit-amber': { port: 3020, env: { NEXT_PUBLIC_SCREEN_COUNTER_LIMIT: '20' } },
+  // Playground count = 25. Amber band = [80% of limit, limit). With LIMIT=30,
+  // 80% = 24, so 24 <= 25 < 30 = amber. (Old LIMIT=20 produced red, not amber.)
+  'limit-amber': { port: 3020, env: { NEXT_PUBLIC_SCREEN_COUNTER_LIMIT: '30' } },
   'limit-red': { port: 3021, env: { NEXT_PUBLIC_SCREEN_COUNTER_LIMIT: '10' } },
   'limit-green': { port: 3022, env: { NEXT_PUBLIC_SCREEN_COUNTER_LIMIT: '100' } },
 };
