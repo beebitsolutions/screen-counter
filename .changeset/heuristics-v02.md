@@ -1,5 +1,5 @@
 ---
-"@beebit/screen-counter": major
+"@beebit/screen-counter": minor
 ---
 
 Heuristic improvements for shadcn-pattern projects (BREAKING).
