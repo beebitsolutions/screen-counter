@@ -70,9 +70,11 @@ jobs:
           title: "chore: release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # OIDC trusted publishing is preferred. If trusted publishing is
-          # not yet configured on npmjs.com, the NPM_TOKEN secret is used
-          # as fallback. When trusted publishing is enabled, this env can
-          # be removed without changing anything else.
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+          # Provenance is disabled while we use a Granular Access Token
+          # with "Bypass 2FA" enabled. The two settings can interact in
+          # ways that make npm return E404 on the final PUT. To re-enable
+          # provenance, switch the publish auth to npm Trusted Publishing
+          # (no NPM_TOKEN needed) configured at the npmjs.com package
+          # settings, then add back `NPM_CONFIG_PROVENANCE: "true"`.
+          # NPM_CONFIG_PROVENANCE: "true"
