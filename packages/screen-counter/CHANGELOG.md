@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- 1a95ce7: Heuristic improvements for shadcn-pattern projects (BREAKING).
+- 1a95ce7: Heuristic improvements for shadcn-pattern projects.
   - **Naming normalised across casings.** The weak `name-suffix:*` signal
     now matches the **last word** of the component name or file basename
     after splitting on `-`, `_` and CamelCase transitions, lowercased. So
@@ -21,8 +21,7 @@
     `../../components/ui/drawer`) are supported.
 
   **Why MAJOR.** Existing projects analysed with v0.1.x will likely show a
-  significantly higher count. Validation against a Beebit shadcn-based ERP
-  prototype showed the modal count climb from ~2 to ~20+ (the analyzer was
+  significantly higher count. Validation against a an internal shadcn-based prototype showed the modal count climb from ~2 to ~20+ (the analyzer was
   under-counting by ~26%). If you have a budget agreed on the previous
   count, review your CHANGELOG and the project's audit before bumping.
 
@@ -53,7 +52,7 @@
   - Next.js plugin with automatic badge injection (webpack only, Turbopack disabled).
   - ScreenCounterBadge React component with environment-driven visibility.
   - Support for Next.js 15 and 16.
-  - Playground with realistic admin dashboard fixtures (17 screens).
+  - Playground with realistic admin dashboard fixtures (25 screens).
 
 - 1a95ce7: Add Pages Router discovery. Set `pagesRouter: true` (programmatically or
   in `screen-counter.config.{mjs,cjs,js}`) to make the analyzer count
