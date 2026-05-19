@@ -1,5 +1,11 @@
 # @beebit/screen-counter
 
+## 0.1.1
+
+### Patch Changes
+
+- 2fc638c: Restructure README to match standard npm package layout. Add a Features section, move Compatibility above Configuration, fix peer-dependency range to next>=15, and remove all references to internal documents that aren't part of the published tarball.
+
 ## 0.1.0
 
 ### Minor Changes

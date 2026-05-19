@@ -1,6 +1,6 @@
 {
   "name": "@beebit/screen-counter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Count screens (routes + modals) in a Next.js project for budgeting and live demos.",
   "type": "module",
   "main": "./dist/index.cjs",
