@@ -8,7 +8,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PLAYGROUND = path.resolve(HERE, '..', '..', '..', '..', 'apps', 'playground');
 const SNAPSHOT = path.resolve(PLAYGROUND, '__snapshots__', 'analysis.json');
 
-const EXPECTED_COUNT = 17;
+const EXPECTED_COUNT = 25;
 
 function sortSignals(signals: readonly Signal[]): Signal[] {
   return [...signals].sort((a, b) => {
@@ -46,7 +46,7 @@ function normalize(result: AnalysisResult): Record<string, unknown> {
 }
 
 describe('analyze() against apps/playground (integration snapshot)', () => {
-  it('should produce the documented count of 17 screens', async () => {
+  it('should produce the documented count of 25 screens', async () => {
     const result = await analyze(PLAYGROUND);
     expect(result.count).toBe(EXPECTED_COUNT);
   });

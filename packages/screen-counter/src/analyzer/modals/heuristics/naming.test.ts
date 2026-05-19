@@ -42,12 +42,42 @@ describe('naming heuristic — positive cases', () => {
   });
 
   it('should pick the first matching suffix from the configured list (order matters)', () => {
-    // Custom order: 'Modal' precedes 'Dialog'. ModalDialog ends with Dialog,
-    // but the function returns the first suffix that endsWith matches against
-    // either componentName or basename. Modal does not endsWith here, so Dialog wins.
+    // Custom order: 'Modal' precedes 'Dialog'. The last word of 'ModalDialog' is
+    // 'dialog', so Modal does not match against either name or basename. Dialog
+    // wins on the name lookup.
     expect(detectNameSuffix('ModalDialog', 'components/X.tsx', ['Modal', 'Dialog'])).toEqual([
       { kind: 'weak', rule: 'name-suffix:Dialog', detail: 'ModalDialog' },
     ]);
+  });
+
+  it('should detect kebab-case file names ending in -modal', () => {
+    expect(detectNameSuffix(null, 'components/login-modal.tsx', SUFFIXES)).toEqual([
+      { kind: 'weak', rule: 'name-suffix:Modal', detail: 'login-modal' },
+    ]);
+  });
+
+  it('should detect snake_case file names ending in _dialog', () => {
+    expect(detectNameSuffix(null, 'components/confirm_dialog.tsx', SUFFIXES)).toEqual([
+      { kind: 'weak', rule: 'name-suffix:Dialog', detail: 'confirm_dialog' },
+    ]);
+  });
+
+  it('should detect a single-word lowercase basename like dialog.tsx', () => {
+    expect(detectNameSuffix(null, 'components/ui/dialog.tsx', SUFFIXES)).toEqual([
+      { kind: 'weak', rule: 'name-suffix:Dialog', detail: 'dialog' },
+    ]);
+  });
+
+  it('should use the canonical config-cased suffix in the rule key even for kebab inputs', () => {
+    expect(detectNameSuffix(null, 'components/feature-flags-modal.tsx', SUFFIXES)).toEqual([
+      { kind: 'weak', rule: 'name-suffix:Modal', detail: 'feature-flags-modal' },
+    ]);
+  });
+
+  it('should detect on the component name when the file is unrelated (mixed kebab path)', () => {
+    expect(
+      detectNameSuffix('FeatureFlagsModal', 'components/feature-flags-modal.tsx', SUFFIXES),
+    ).toEqual([{ kind: 'weak', rule: 'name-suffix:Modal', detail: 'FeatureFlagsModal' }]);
   });
 });
 
@@ -56,8 +86,10 @@ describe('naming heuristic — negative cases', () => {
     expect(detectNameSuffix('Button', 'components/Button.tsx', SUFFIXES)).toEqual([]);
   });
 
-  it('should NOT detect signal when the suffix is mid-name (endsWith only)', () => {
-    expect(detectNameSuffix('ModalAdjacent', 'components/ModalAdjacent.tsx', SUFFIXES)).toEqual([]);
+  it('should NOT detect signal when the suffix is mid-name (last-word match only)', () => {
+    expect(detectNameSuffix('ModalAdjacent', 'components/ModalAdjacent.tsx', SUFFIXES)).toEqual(
+      [],
+    );
   });
 
   it('should NOT detect signal when no suffixes are configured', () => {
@@ -68,7 +100,27 @@ describe('naming heuristic — negative cases', () => {
     expect(detectNameSuffix('LoginModal', 'components/LoginModal.tsx', [''])).toEqual([]);
   });
 
-  it('should NOT match case-insensitively (endsWith is case-sensitive)', () => {
-    expect(detectNameSuffix('loginmodal', 'components/loginmodal.tsx', SUFFIXES)).toEqual([]);
+  it('should NOT match when the substring is mid-word like "modalize"', () => {
+    // The last word is `modalize`, not a configured suffix — no signal.
+    expect(detectNameSuffix(null, 'components/modalize.tsx', SUFFIXES)).toEqual([]);
+  });
+
+  it('should NOT detect kebab-case with non-modal last word like "login-modal-helper"', () => {
+    expect(detectNameSuffix(null, 'components/login-modal-helper.tsx', SUFFIXES)).toEqual([]);
+  });
+
+  it('should NOT detect kebab-case when last word is a Provider (excluded suffix, dropped here too)', () => {
+    // The naming heuristic itself does not know about excludeSuffixes — but
+    // `provider` is simply not in the modal-suffix list, so it returns empty.
+    // The scoring layer makes the exclusion behaviour explicit.
+    expect(
+      detectNameSuffix(null, 'components/login-modal-provider.tsx', SUFFIXES),
+    ).toEqual([]);
+  });
+
+  it('should NOT detect when "modal" is embedded with no separator like "loginmodal.tsx"', () => {
+    // With no kebab/snake/CamelCase boundary, the whole basename IS the last
+    // word — `loginmodal` ≠ `modal`. Lower-case naming alone does not opt in.
+    expect(detectNameSuffix(null, 'components/loginmodal.tsx', SUFFIXES)).toEqual([]);
   });
 });

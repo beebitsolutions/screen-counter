@@ -17,14 +17,15 @@ The same files serve two purposes:
 
 ## Total expected from `analyze()`
 
-| Bucket               | Count |
-| -------------------- | ----- |
-| Routes (Block A)     | 8     |
-| Modals (Block B)     | 6     |
-| Modals (Block C)     | 2     |
-| Forced modals (D)    | 1     |
-| **`count`**          | **17**|
-| Disabled (D)         | 1     |
+| Bucket                       | Count |
+| ---------------------------- | ----- |
+| Routes — App (Block A)       | 8     |
+| Routes — Pages (Block E)     | 4     |
+| Modals (Block B)             | 6     |
+| Modals (Block C + extras)    | 6     |
+| Forced modals (D)            | 1     |
+| **`count`**                  | **25**|
+| Disabled (D)                 | 1     |
 
 The CLI verbose run should agree:
 
@@ -86,6 +87,22 @@ node packages/screen-counter/dist/cli.js apps/playground --verbose
 | D.1 | `components/KeyboardShortcutsCheatsheet.tsx`        | **counts as forced**: `data-screen-counter="screen"` on JSX root         |
 | D.2 | `components/InternalDebugPanel.tsx`                 | lands in `result.disabled`: `data-screen-counter="disable"` on JSX root  |
 
+### Block E — Routes (Pages Router)
+
+Enabled via `apps/playground/screen-counter.config.mjs` (`pagesRouter: true`).
+These fixtures live under `apps/playground/pages/` and exist only as
+analyzer fixtures — they are not rendered by Next.js in the playground
+demo because the App Router (`app/`) takes precedence.
+
+| #    | Path                                            | Expectation                                                       |
+| ---- | ----------------------------------------------- | ----------------------------------------------------------------- |
+| E.1  | `pages/legacy.tsx`                              | counts; route `/legacy`                                           |
+| E.2  | `pages/legacy-users/[id].tsx`                   | counts; route `/legacy-users/[id]` (dynamic)                      |
+| E.3  | `pages/legacy-blog/[...slug].tsx`               | counts; route `/legacy-blog/[...slug]` (catch-all)                |
+| E.4  | `pages/legacy-shop/[[...slug]].tsx`             | counts; route `/legacy-shop/[[...slug]]` (optional catch-all)     |
+| E.5  | `pages/_app.tsx`                                | does NOT count (special top-level file)                           |
+| E.6  | `pages/api/legacy-health.ts`                    | does NOT count (api/* excluded)                                   |
+
 ## How to run
 
 ```bash
@@ -125,7 +142,7 @@ with:
 pnpm test:snapshot:update    # = vitest run -u packages/screen-counter/src/integration/playground.test.ts
 ```
 
-The test asserts `count === 17` **before** writing the snapshot, so a wrong
+The test asserts `count === 25` **before** writing the snapshot, so a wrong
 count fails loudly instead of silently corrupting the snapshot. If the
 count is off, **find the fixture that misbehaved** — do not edit the
 snapshot to match.

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
-import { Filter, FileDown, MoreHorizontal } from 'lucide-react';
+import { Filter, FileDown, FileUp, MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,10 +22,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import BillingHistoryDialog from '@/components/billing-history-dialog';
 import DeleteProjectDialog from '@/components/DeleteProjectDialog';
 import EditProjectDialog from '@/components/EditProjectDialog';
 import FiltersDrawer, { type ProjectFilters } from '@/components/FiltersDrawer';
 import ConfirmInExportDialog from '@/components/ConfirmInExportDialog';
+import ImportDataModal from '@/components/import_data_modal';
 
 // Chakra v2 explodes during React 19 hydration. Defer the import so Chakra
 // only loads in the browser, after hydration, and only once an invite is
@@ -60,6 +62,8 @@ export function ProjectsTable({ projects }: Props) {
   const [deleteFor, setDeleteFor] = useState<Project | null>(null);
   const [editFor, setEditFor] = useState<Project | null>(null);
   const [inviteFor, setInviteFor] = useState<Project | null>(null);
+  const [billingFor, setBillingFor] = useState<Project | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const visible = useMemo(() => {
     return projects.filter((p) => {
@@ -84,6 +88,10 @@ export function ProjectsTable({ projects }: Props) {
           <Button variant="outline" size="sm" onClick={() => setFiltersOpen(true)}>
             <Filter className="mr-1.5 size-4" />
             Filtros
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+            <FileUp className="mr-1.5 size-4" />
+            Importar
           </Button>
           <Button variant="outline" size="sm" onClick={() => setExportOpen(true)}>
             <FileDown className="mr-1.5 size-4" />
@@ -139,6 +147,9 @@ export function ProjectsTable({ projects }: Props) {
                       <DropdownMenuItem onSelect={() => setInviteFor(project)}>
                         Invitar miembro
                       </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => setBillingFor(project)}>
+                        Ver historial de facturación
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => setDeleteFor(project)}
@@ -162,6 +173,12 @@ export function ProjectsTable({ projects }: Props) {
         onChange={setFilters}
       />
       <ConfirmInExportDialog open={exportOpen} onOpenChange={setExportOpen} />
+      <ImportDataModal open={importOpen} onOpenChange={setImportOpen} />
+      <BillingHistoryDialog
+        projectName={billingFor?.name ?? ''}
+        open={billingFor !== null}
+        onOpenChange={(o) => !o && setBillingFor(null)}
+      />
       <DeleteProjectDialog
         projectName={deleteFor?.name ?? ''}
         open={deleteFor !== null}

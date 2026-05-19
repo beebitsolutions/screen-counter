@@ -57,6 +57,15 @@
     "modal",
     "routes"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beebitsolutions/screen-counter.git",
+    "directory": "packages/screen-counter"
+  },
+  "homepage": "https://github.com/beebitsolutions/screen-counter#readme",
+  "bugs": {
+    "url": "https://github.com/beebitsolutions/screen-counter/issues"
+  },
   "license": "UNLICENSED",
   "dependencies": {
     "@swc/core": "^1.10.0",

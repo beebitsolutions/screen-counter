@@ -20,9 +20,15 @@
     "e2e:install": "cd e2e && pnpm install --ignore-workspace",
     "test:e2e": "cd e2e && pnpm exec playwright test",
     "test:e2e:ui": "cd e2e && pnpm exec playwright test --ui",
-    "clean": "pnpm -r exec rm -rf dist .next .turbo coverage"
+    "clean": "pnpm -r exec rm -rf dist .next .turbo coverage",
+    "sc": "node packages/screen-counter/dist/cli.js",
+    "sc:audit": "bash scripts/sc-audit.sh",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9.15.0",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",

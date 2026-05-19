@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type { ScoringThreshold, Signal } from '../../types.js';
 import type { EscapeHatch } from './escape-hatches.js';
+import { lastWord } from './name-utils.js';
 
 export type Classification =
   | { kind: 'modal' | 'forced' | 'disabled'; signals: Signal[] }
@@ -63,11 +64,15 @@ function matchesExclusion(
   filePath: string,
   suffixes: ReadonlyArray<string>,
 ): boolean {
-  const basename = path.posix.basename(filePath).replace(/\.[^.]+$/, '');
+  if (suffixes.length === 0) return false;
+  const basename = path.posix.basename(filePath);
+  const fileWord = lastWord(basename);
+  const nameWord = componentName ? lastWord(componentName) : '';
   for (const suffix of suffixes) {
     if (suffix.length === 0) continue;
-    if (componentName && componentName.endsWith(suffix)) return true;
-    if (basename.endsWith(suffix)) return true;
+    const lower = suffix.toLowerCase();
+    if (nameWord === lower) return true;
+    if (fileWord === lower) return true;
   }
   return false;
 }

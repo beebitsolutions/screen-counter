@@ -47,10 +47,6 @@ function logInfo(msg: string, verbose: boolean): void {
   process.stderr.write(`${logPrefix()} ${msg}\n`);
 }
 
-function logWarn(msg: string): void {
-  process.stderr.write(`${logPrefix()} ${pc.yellow(msg)}\n`);
-}
-
 function addAlias(config: AnyConfig, generated: string): void {
   const resolve = (config['resolve'] as AnyConfig | undefined) ?? {};
   const alias = (resolve['alias'] as Record<string, string | string[]> | undefined) ?? {};
@@ -90,10 +86,6 @@ function isWebpackHookFn(value: unknown): value is (cfg: AnyConfig, ctx: Webpack
 function transform(opts: WithScreenCounterOptions, cfg: NextConfigLike): NextConfigLike {
   const rootDir = process.cwd();
   const generated = seedRuntimeFile(rootDir);
-
-  if (opts.pagesRouter) {
-    logWarn('pagesRouter option is not yet implemented; ignoring.');
-  }
 
   const userWebpack = cfg['webpack'];
   const autoInject = opts.autoInject !== false;

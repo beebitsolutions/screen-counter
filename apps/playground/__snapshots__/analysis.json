@@ -1,5 +1,5 @@
 {
-  "count": 17,
+  "count": 25,
   "routes": [
     {
       "kind": "route",
@@ -48,6 +48,30 @@
       "path": "app/page.tsx",
       "route": "/",
       "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "pages/legacy-blog/[...slug].tsx",
+      "route": "/legacy-blog/[...slug]",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "pages/legacy-shop/[[...slug]].tsx",
+      "route": "/legacy-shop/[[...slug]]",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "pages/legacy-users/[id].tsx",
+      "route": "/legacy-users/[id]",
+      "signals": []
+    },
+    {
+      "kind": "route",
+      "path": "pages/legacy.tsx",
+      "route": "/legacy",
+      "signals": []
     }
   ],
   "modals": [
@@ -63,6 +87,21 @@
           "kind": "weak",
           "rule": "name-suffix:Dialog",
           "detail": "ConfirmInExportDialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/ConsumerOfDialog.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "reexport:components/ui/dialog.tsx"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Dialog",
+          "detail": "ConsumerOfDialog"
         }
       ]
     },
@@ -175,11 +214,65 @@
     },
     {
       "kind": "modal",
+      "path": "components/billing-history-dialog.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "reexport:components/ui/dialog.tsx"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Dialog",
+          "detail": "BillingHistoryDialog"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/feature-flags-modal.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "jsx-attr:aria-modal=true"
+        },
+        {
+          "kind": "strong",
+          "rule": "jsx-attr:role=dialog"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Modal",
+          "detail": "FeatureFlagsModal"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
+      "path": "components/import_data_modal.tsx",
+      "signals": [
+        {
+          "kind": "strong",
+          "rule": "jsx-attr:aria-modal=true"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Modal",
+          "detail": "ImportDataModal"
+        }
+      ]
+    },
+    {
+      "kind": "modal",
       "path": "components/ui/dialog.tsx",
       "signals": [
         {
           "kind": "strong",
           "rule": "path:shadcn-ui"
+        },
+        {
+          "kind": "weak",
+          "rule": "name-suffix:Dialog",
+          "detail": "dialog"
         }
       ]
     }

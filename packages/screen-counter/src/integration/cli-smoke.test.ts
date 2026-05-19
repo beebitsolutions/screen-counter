@@ -10,7 +10,7 @@ const PACKAGE_ROOT = path.resolve(HERE, '..', '..');
 const CLI_PATH = path.join(PACKAGE_ROOT, 'dist', 'cli.js');
 const PLAYGROUND = path.resolve(PACKAGE_ROOT, '..', '..', 'apps', 'playground');
 
-const EXPECTED_COUNT = 17;
+const EXPECTED_COUNT = 25;
 
 interface CliRun {
   stdout: string;
@@ -53,7 +53,7 @@ describe('CLI smoke against apps/playground', () => {
     expect(cliBuilt).toBe(true);
   });
 
-  it('--json on the playground should report count===17 and exit 0', async () => {
+  it('--json on the playground should report count===25 and exit 0', async () => {
     const result = await runCli([PLAYGROUND, '--json']);
     expect(result.code).toBe(0);
     const parsed = JSON.parse(result.stdout) as { count: number };

@@ -10,7 +10,6 @@ export interface WithScreenCounterOptions {
   analyzer?: Config;
   autoInject?: boolean;
   badge?: BadgeOptions;
-  pagesRouter?: boolean;
   verbose?: boolean;
 }
 

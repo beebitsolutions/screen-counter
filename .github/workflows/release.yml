@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+# Required for OIDC provenance and for changesets/action to open release PRs.
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      # License guard: refuse to publish while the package is UNLICENSED.
+      # Build and test still run so any regressions surface; only the
+      # Create-Release-PR-or-Publish step is skipped.
+      - name: License guard
+        run: |
+          LICENSE_FIELD=$(node -p "require('./packages/screen-counter/package.json').license")
+          if [ "$LICENSE_FIELD" = "UNLICENSED" ]; then
+            echo "::warning::Package license is still UNLICENSED. Skipping publish step. See documentation/guides/03-publicacion-npm.md step 3."
+            echo "SKIP_PUBLISH=1" >> $GITHUB_ENV
+          fi
+
+      - name: Create Release PR or Publish
+        if: env.SKIP_PUBLISH != '1'
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm release
+          version: pnpm version
+          commit: "chore: release"
+          title: "chore: release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # OIDC trusted publishing is preferred. If trusted publishing is
+          # not yet configured on npmjs.com, the NPM_TOKEN secret is used
+          # as fallback. When trusted publishing is enabled, this env can
+          # be removed without changing anything else.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

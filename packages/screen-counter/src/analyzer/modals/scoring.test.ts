@@ -120,6 +120,39 @@ describe('classifyCandidate — exclusion suffixes', () => {
     );
     expect(result).toBeNull();
   });
+
+  it('should exclude kebab-case "...-provider.tsx" basenames', () => {
+    const result = classifyCandidate(
+      ctx({
+        componentName: null,
+        filePath: 'components/onboarding-modal-provider.tsx',
+        signals: [strong('import:@radix-ui/react-dialog')],
+      }),
+    );
+    expect(result).toBeNull();
+  });
+
+  it('should exclude snake_case "..._context.tsx" basenames', () => {
+    const result = classifyCandidate(
+      ctx({
+        componentName: null,
+        filePath: 'components/auth_modal_context.tsx',
+        signals: [strong('jsx-attr:role=dialog')],
+      }),
+    );
+    expect(result).toBeNull();
+  });
+
+  it('should exclude kebab-case component names ending in "wrapper"', () => {
+    const result = classifyCandidate(
+      ctx({
+        componentName: 'drawer-wrapper',
+        filePath: 'components/drawer-wrapper.tsx',
+        signals: [weak('name-suffix:Drawer'), weak('react-dom:createPortal')],
+      }),
+    );
+    expect(result).toBeNull();
+  });
 });
 
 describe('classifyCandidate — escape hatches', () => {

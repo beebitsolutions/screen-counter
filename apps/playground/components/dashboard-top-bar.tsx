@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Flag, Plus } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import CreateProjectDialog from '@/components/CreateProjectDialog';
+import FeatureFlagsModal from '@/components/feature-flags-modal';
 import { toast } from 'sonner';
 
 type Props = {
@@ -21,6 +22,7 @@ type Props = {
 
 export function DashboardTopBar({ title, description }: Props) {
   const [createOpen, setCreateOpen] = useState(false);
+  const [flagsOpen, setFlagsOpen] = useState(false);
 
   return (
     <>
@@ -32,6 +34,15 @@ export function DashboardTopBar({ title, description }: Props) {
           ) : null}
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setFlagsOpen(true)}
+            aria-label="Feature flags"
+          >
+            <Flag className="mr-1.5 size-4" />
+            Flags
+          </Button>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-1.5 size-4" />
             Nuevo proyecto
@@ -62,6 +73,7 @@ export function DashboardTopBar({ title, description }: Props) {
         onOpenChange={setCreateOpen}
         onCreate={(input) => toast.success(`Proyecto «${input.name}» creado`)}
       />
+      <FeatureFlagsModal open={flagsOpen} onOpenChange={setFlagsOpen} />
     </>
   );
 }

@@ -1,7 +1,7 @@
 # @beebit/screen-counter
 
-[![npm version](https://img.shields.io/badge/npm-v0.0.0-lightgrey)](https://www.npmjs.com/package/@beebit/screen-counter)
-[![CI](https://img.shields.io/badge/CI-pending-lightgrey)](#)
+[![npm version](https://img.shields.io/npm/v/@beebit/screen-counter.svg)](https://www.npmjs.com/package/@beebit/screen-counter)
+[![CI](https://github.com/beebitsolutions/screen-counter/actions/workflows/ci.yml/badge.svg)](https://github.com/beebitsolutions/screen-counter/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-UNLICENSED-red)](#license)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](#compatibility)
 
@@ -44,11 +44,11 @@ npx @beebit/screen-counter
 ```
 @beebit/screen-counter — analyzing /path/to/your-app
 
-✓ 8 routes
-✓ 9 modals (radix: 3, chakra: 1, forced: 1, headlessui: 1, mui: 1, role: 1, vaul: 1)
+✓ 12 routes
+✓ 13 modals (radix: 2, reexport:components/ui/dialog.tsx: 2, role: 2, aria: 1, chakra: 1, forced: 1, headlessui: 1, mui: 1, shadcn: 1, vaul: 1)
 ✓ 1 component excluded manually
 ─────────────────
-  17 screens total
+  25 screens total
 ```
 
 Useful flags:
@@ -82,7 +82,11 @@ The plugin runs `analyze()` at build/dev time, injects a
 `<ScreenCounterBadge />` into your **App Router** root layout, and refreshes
 the count via HMR when you add or remove screens.
 
-`pages/`-only projects: not supported in v1. See [Compatibility](#compatibility).
+Pages Router projects: opt in with `analyzer.pagesRouter: true` (or
+`pagesRouter: true` in `screen-counter.config.mjs`). The analyzer counts
+every `pages/**/*.{tsx,jsx,ts,js}` and skips `_app`, `_document`, `_error`
+and `api/*`. Routes that collide with App Router routes surface as
+warnings.
 
 ## Configuration
 
@@ -90,11 +94,10 @@ the count via HMR when you add or remove screens.
 
 | Option        | Type           | Default | Notes                                                                       |
 | ------------- | -------------- | ------- | --------------------------------------------------------------------------- |
-| `analyzer`    | `Config`       | `{}`    | Forwarded to `analyze()`. Same schema as `screen-counter.config.{mjs,cjs,js}`. |
+| `analyzer`    | `Config`       | `{}`    | Forwarded to `analyze()`. Same schema as `screen-counter.config.{mjs,cjs,js}`. Set `analyzer.pagesRouter: true` to enable Pages Router discovery. |
 | `autoInject`  | `boolean`      | `true`  | Disable to mount `<ScreenCounterBadge />` manually.                          |
 | `badge`       | `BadgeOptions` | —       | Forwarded into the auto-injected badge.                                     |
 | `verbose`     | `boolean`      | `false` | Print `[@beebit/screen-counter]` info lines on each analyzer run.            |
-| `pagesRouter` | `boolean`      | `false` | Reserved. Logs a warning if `true`; not implemented in v1.                   |
 
 Optional repo-level config — drop a `screen-counter.config.mjs` at the
 project root and the CLI / plugin will pick it up:
@@ -115,13 +118,20 @@ Full schema and zone-grey decisions: [`documentation/dev-notes/02-heuristicas-mo
 A screen is **defined**, not used — a modal reused 12 times still counts
 once.
 
-- Every `app/**/page.{tsx,jsx,ts,js}` (and `pages/**/*` when Pages Router lands).
+- Every `app/**/page.{tsx,jsx,ts,js}` (App Router) and, when
+  `pagesRouter: true`, every `pages/**/*.{tsx,jsx,ts,js}` excluding
+  `_app`, `_document`, `_error` and `api/*`.
 - Every component triggering **1 strong signal** or **2 weak signals**:
   - **Strong**: import from a known modal lib (Radix, Headless UI, MUI,
-    Chakra, vaul, shadcn), or a JSX root with `role="dialog"` /
-    `aria-modal="true"`.
-  - **Weak**: name/file ends with `Modal`/`Dialog`/`Drawer`/`Sheet`/`Popup`/
-    `Lightbox`/`Overlay`, or `createPortal` from `react-dom`.
+    Chakra, vaul, shadcn), a JSX root with `role="dialog"` /
+    `aria-modal="true"`, or a local import of a shadcn primitive
+    (`@/components/ui/dialog` and similar — the consumer inherits the
+    primitive's strong signal via `reexport:<source>`).
+  - **Weak**: the **last word** of the component name or file basename is
+    `Modal`/`Dialog`/`Drawer`/`Sheet`/`Popup`/`Lightbox`/`Overlay`, or
+    the file uses `createPortal` from `react-dom`. The last-word match is
+    casing-insensitive: `LoginModal.tsx`, `login-modal.tsx` and
+    `login_modal.tsx` all qualify.
 
 Dynamic routes (`[id]`, `[...slug]`, `[[...slug]]`) and route groups
 (`(group)`) each count once. Detail: see the devs guide.
@@ -133,9 +143,11 @@ Dynamic routes (`[id]`, `[...slug]`, `[[...slug]]`) and route groups
 - `_app`, `_document`, `_error`, `api/*`.
 - Parallel routes (`@slot`) and intercepted routes (`(.)foo`) — skipped
   with a warning, decision deferred.
-- Components whose name or file ends with a default exclusion suffix:
-  `Provider`, `Context`, `Wrapper`. So `LoginModalProvider` is **not**
-  counted.
+- Components whose name's or basename's **last word** is a default
+  exclusion suffix: `Provider`, `Context`, `Wrapper`. The same
+  kebab/snake-aware match applies — `LoginModalProvider`,
+  `login-modal-provider.tsx` and `auth_modal_context.tsx` are all
+  excluded.
 
 ## Escape hatches
 
@@ -169,7 +181,7 @@ Both require the `NEXT_PUBLIC_` prefix so Next inlines them at build time.
 | Next.js 15 / 16     | Supported (CI matrix).                                                 |
 | Next.js ≤ 14        | Not supported.                                                         |
 | App Router          | Supported.                                                             |
-| Pages Router        | Not supported in v1 (stub seam in place — decision pending).            |
+| Pages Router        | Supported via `pagesRouter: true` (off by default).                    |
 | Turbopack           | **Not supported in v1.** Plugin auto-disables with a warning. On Next 16 (Turbopack default) opt out with `next dev --webpack` / `next build --webpack`. Tracked as `SC-056`. |
 | Node                | `>= 20`.                                                                |
 
@@ -221,11 +233,11 @@ npx @beebit/screen-counter
 
 ```
 @beebit/screen-counter — analyzing /ruta/a/tu-app
-✓ 8 routes
-✓ 9 modals (radix: 3, chakra: 1, forced: 1, headlessui: 1, mui: 1, role: 1, vaul: 1)
+✓ 12 routes
+✓ 13 modals (radix: 2, reexport:components/ui/dialog.tsx: 2, role: 2, aria: 1, chakra: 1, forced: 1, headlessui: 1, mui: 1, shadcn: 1, vaul: 1)
 ✓ 1 component excluded manually
 ─────────────────
-  17 screens total
+  25 screens total
 ```
 
 Exportar a JSON para presupuesto:
@@ -246,10 +258,13 @@ export default withScreenCounter({})({
 
 ### Qué cuenta
 
-- Cada `app/**/page.tsx`.
+- Cada `app/**/page.tsx` (App Router) y, si activas
+  `pagesRouter: true`, cada `pages/**/*.{tsx,jsx,ts,js}` excluyendo
+  `_app`, `_document`, `_error` y `api/*` (Pages Router).
 - Cada componente con **1 señal fuerte** o **2 señales débiles** (libs
   conocidas de modales, `role="dialog"`, sufijos `Modal`/`Dialog`/…,
-  `createPortal`).
+  `createPortal`, o `reexport:<source>` cuando reexportas una primitiva
+  local que ya disparó una señal fuerte — típicamente `components/ui/dialog`).
 - Las rutas dinámicas y los grupos `(group)` cuentan **1** vez por
   definición, no por uso.
 
@@ -264,8 +279,10 @@ export default withScreenCounter({})({
 
 ### Compatibilidad
 
-Next 14 y 15 sobre webpack. **Turbopack no soportado en v1** — el
-plugin se desactiva con un aviso. Node `>= 20`.
+Next 15 y 16 sobre webpack. App Router soportado por defecto; Pages
+Router opcional con `pagesRouter: true`. **Turbopack no soportado en
+v1** — el plugin se desactiva con un aviso (en Next 16, opta por
+webpack con `next dev --webpack` / `next build --webpack`). Node `>= 20`.
 
 ### Política de versionado
 

@@ -16,6 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardTopBar } from '@/components/dashboard-top-bar';
 import { ProjectDetailActions } from '@/components/project-detail-actions';
+import ModalizeImage from '@/components/modalize-image';
 import { mockActivity, mockMembers, mockProjects, roleLabel, statusLabel } from '@/lib/mock-data';
 
 type PageProps = {
@@ -67,6 +68,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             <TabsTrigger value="activity">Actividad</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="mt-4 rounded-lg border bg-background p-4">
+            <div className="mb-4 max-w-xs">
+              <ModalizeImage
+                src={`https://picsum.photos/seed/${project.id}/320/200`}
+                alt={`Portada de ${project.name}`}
+              />
+            </div>
             <h3 className="text-sm font-semibold text-foreground">Descripción del proyecto</h3>
             <p className="mt-2 text-sm text-muted-foreground">{project.description}</p>
             <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">

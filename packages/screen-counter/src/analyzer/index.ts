@@ -10,8 +10,16 @@ import { detectModalLibraryImport } from './modals/heuristics/imports.js';
 import { detectModalJsxAttrs } from './modals/heuristics/jsx-attrs.js';
 import { detectNameSuffix } from './modals/heuristics/naming.js';
 import { detectCreatePortalUse } from './modals/heuristics/portal.js';
-import { getImports, parseTsx } from './modals/parse.js';
+import { getImports, parseTsx, type ImportInfo } from './modals/parse.js';
+import { createPathResolver } from './modals/path-resolver.js';
+import {
+  buildModalSourceSet,
+  detectReexportSignal,
+  hasPropagationSourceSignal,
+} from './modals/reexport-tracing.js';
 import { classifyCandidate } from './modals/scoring.js';
+import type { EscapeHatch } from './modals/escape-hatches.js';
+import type { Signal } from '../types.js';
 import { classifyAppRouterFile } from './routes/app-router.js';
 import { discoverFiles, loadGitignore } from './routes/discover.js';
 import { discoverPagesRouterRoutes } from './routes/pages-router.js';
@@ -86,12 +94,33 @@ export async function analyze(rootDir: string, config?: Config): Promise<Analysi
   if (resolved.pagesRouter) {
     const pagesRoot = await firstExistingDir(absoluteRoot, PAGES_ROUTER_ROOTS);
     if (pagesRoot) {
-      const stub = await discoverPagesRouterRoutes(absoluteRoot, pagesRoot);
-      routes.push(...stub.routes);
-      warnings.push(...stub.warnings);
+      const pages = await discoverPagesRouterRoutes(absoluteRoot, pagesRoot, {
+        include: resolved.include,
+        exclude: resolved.exclude,
+        gitignore,
+      });
+      routes.push(...pages.routes);
+      warnings.push(...pages.warnings);
     }
   }
   routes.sort(byPath);
+
+  // Same URL emitted by both App and Pages routers → Next.js logs an error
+  // and App Router wins. We still emit both entries so the report stays
+  // faithful, but surface a warning so consumers know their count is
+  // intentionally over-reporting until they remove one side.
+  const byRoute = new Map<string, ScreenInfo[]>();
+  for (const r of routes) {
+    if (!r.route) continue;
+    const bucket = byRoute.get(r.route) ?? [];
+    bucket.push(r);
+    byRoute.set(r.route, bucket);
+  }
+  for (const [route, entries] of byRoute) {
+    if (entries.length < 2) continue;
+    const paths = entries.map((e) => e.path).join(', ');
+    warnings.push(`Route collision at ${route}: ${paths}`);
+  }
 
   /* -------------------------- modals -------------------------- */
   const candidates = await discoverModalCandidates({
@@ -100,6 +129,17 @@ export async function analyze(rootDir: string, config?: Config): Promise<Analysi
     exclude: resolved.exclude,
     gitignore,
   });
+
+  interface PassOne {
+    filePath: string;
+    componentName: string | null;
+    imports: ImportInfo[];
+    signals: Signal[];
+    escapeHatch: EscapeHatch;
+  }
+
+  // Pass 1 — parse + gather raw signals + escape hatch, but defer classification.
+  const passOne: PassOne[] = [];
   for (const file of candidates) {
     const absFile = path.join(absoluteRoot, file);
     let contents: string;
@@ -122,30 +162,55 @@ export async function analyze(rootDir: string, config?: Config): Promise<Analysi
       for (const w of extracted.warnings) warnings.push(`${file}: ${w}`);
     }
 
-    const signals = [
+    const signals: Signal[] = [
       ...detectModalLibraryImport(imports, file, resolved.modalLibraries),
       ...detectModalJsxAttrs(extracted.jsxRoots),
       ...detectNameSuffix(extracted.componentName, file, resolved.nameSuffixes),
       ...detectCreatePortalUse(ast, imports),
     ];
-    const escapeHatch = readEscapeHatch(extracted.jsxRoots);
-    const classification = classifyCandidate({
-      escapeHatch,
-      componentName: extracted.componentName,
+    passOne.push({
       filePath: file,
+      componentName: extracted.componentName,
+      imports,
       signals,
+      escapeHatch: readEscapeHatch(extracted.jsxRoots),
+    });
+  }
+
+  // Pass 2 — propagate strong signals from local modal primitives to their
+  // consumers via re-export tracing.
+  const sourceSet = buildModalSourceSet(passOne);
+  const pathResolver = createPathResolver(absoluteRoot);
+  for (const entry of passOne) {
+    if (hasPropagationSourceSignal(entry.signals)) continue;
+    const reexport = detectReexportSignal(
+      entry.filePath,
+      entry.imports,
+      sourceSet,
+      pathResolver,
+    );
+    if (reexport) entry.signals.push(reexport);
+  }
+
+  // Classification pass.
+  for (const entry of passOne) {
+    const classification = classifyCandidate({
+      escapeHatch: entry.escapeHatch,
+      componentName: entry.componentName,
+      filePath: entry.filePath,
+      signals: entry.signals,
       excludeSuffixes: resolved.excludeSuffixes,
       threshold: resolved.scoringThreshold,
     });
     if (!classification) continue;
 
-    const entry: ScreenInfo = {
+    const screen: ScreenInfo = {
       kind: classification.kind,
-      path: file,
+      path: entry.filePath,
       signals: classification.signals,
     };
-    if (classification.kind === 'disabled') disabled.push(entry);
-    else modals.push(entry);
+    if (classification.kind === 'disabled') disabled.push(screen);
+    else modals.push(screen);
   }
 
   modals.sort(byPath);

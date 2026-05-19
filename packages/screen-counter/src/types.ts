@@ -15,8 +15,13 @@ export type ScreenKind = 'route' | 'modal' | 'forced' | 'disabled';
  * - `import:<source>` — modal-library import (e.g. `import:@radix-ui/react-dialog`).
  * - `path:shadcn-ui` — file path matches a shadcn UI dialog pattern.
  * - `jsx-attr:role=dialog`, `jsx-attr:aria-modal=true` — root JSX attributes.
- * - `name-suffix:<suffix>` — name or basename ends with a known modal suffix.
+ * - `name-suffix:<suffix>` — last word of the name or basename matches a known
+ *   modal suffix (case- and casing-insensitive: PascalCase, kebab-case and
+ *   snake_case all collapse to the same lookup).
  * - `react-dom:createPortal` — module imports and calls `createPortal`.
+ * - `reexport:<source>` — re-export tracing: an import in this file resolves
+ *   to a local modal primitive (a file that itself fired a strong
+ *   `import:*` or `path:shadcn-ui` signal).
  * - `escape-hatch:screen`, `escape-hatch:disable` — explicit overrides.
  */
 export interface Signal {
@@ -84,9 +89,14 @@ export interface ScoringThreshold {
  */
 export interface Config {
   /**
-   * Enable discovery of Pages Router files (`pages/**\/*.{tsx,jsx,ts,js}`).
-   * Defaults to `false`. The implementation is a v0.x stub gated on
-   * a decision still pending in `documentation/preguntas-screen-counter.md §3`.
+   * Enable discovery of Pages Router files (`pages/**\/*.{tsx,jsx,ts,js}`
+   * or `src/pages/**\/*.{tsx,jsx,ts,js}`). Defaults to `false`.
+   *
+   * When enabled, the analyzer counts each file as one screen and skips
+   * `_app`, `_document`, `_error` at the Pages Router root, plus anything
+   * under `api/`. Dynamic, catch-all and optional catch-all segments pass
+   * through verbatim. Collisions with App Router routes (same canonical URL)
+   * surface as warnings; both entries remain in the report.
    */
   pagesRouter?: boolean;
   /** Extra include globs appended to the analyzer defaults. */

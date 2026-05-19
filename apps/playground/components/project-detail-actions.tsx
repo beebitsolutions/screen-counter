@@ -2,8 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Pencil, Trash, UserPlus } from 'lucide-react';
+import { CircleCheck, Pencil, Trash, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ConsumerOfDialog from '@/components/ConsumerOfDialog';
 import DeleteProjectDialog from '@/components/DeleteProjectDialog';
 import EditProjectDialog from '@/components/EditProjectDialog';
 import { toast } from 'sonner';
@@ -22,10 +23,15 @@ export function ProjectDetailActions({ project }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [approveOpen, setApproveOpen] = useState(false);
 
   return (
     <>
       <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={() => setApproveOpen(true)}>
+          <CircleCheck className="mr-1.5 size-4" />
+          Pedir aprobación
+        </Button>
         <Button size="sm" variant="outline" onClick={() => setInviteOpen(true)}>
           <UserPlus className="mr-1.5 size-4" />
           Invitar
@@ -39,6 +45,11 @@ export function ProjectDetailActions({ project }: Props) {
           Eliminar
         </Button>
       </div>
+      <ConsumerOfDialog
+        projectName={project.name}
+        open={approveOpen}
+        onOpenChange={setApproveOpen}
+      />
       {/* See projects-table.tsx: only mount when active, otherwise Chakra's
           global emotion resets break the styles of every other dialog. */}
       {inviteOpen && (
