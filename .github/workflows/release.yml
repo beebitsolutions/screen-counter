@@ -55,37 +55,6 @@ jobs:
             echo "SKIP_PUBLISH=1" >> $GITHUB_ENV
           fi
 
-      # Diagnostic — prints the npm user the NPM_TOKEN authenticates as
-      # plus the token's permissions on the @beebit scope. Useful to debug
-      # 404 / 403 errors during publish. Safe to keep long-term: prints
-      # user metadata only, never the token.
-      #
-      # NOTE: setup-node@v4 writes its own .npmrc and forces npm to read
-      # it via NPM_CONFIG_USERCONFIG. That file expects NODE_AUTH_TOKEN
-      # (not NPM_TOKEN) for the registry token. So every step that calls
-      # npm directly needs NODE_AUTH_TOKEN set, even if our secret is
-      # called NPM_TOKEN.
-      - name: Diagnostic — npm auth status
-        if: env.SKIP_PUBLISH != '1'
-        run: |
-          echo "::group::npm whoami"
-          npm whoami || echo "whoami failed"
-          echo "::endgroup::"
-          echo "::group::npm token whoami via API"
-          curl -sS -H "Authorization: Bearer ${NPM_TOKEN}" \
-            https://registry.npmjs.org/-/whoami | head -c 500
-          echo ""
-          echo "::endgroup::"
-          echo "::group::package access — who can publish @beebit/screen-counter"
-          npm access list collaborators @beebit/screen-counter 2>&1 | head -20 || true
-          echo "::endgroup::"
-          echo "::group::package access — 2FA setting"
-          npm access get status @beebit/screen-counter 2>&1 | head -20 || true
-          echo "::endgroup::"
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create Release PR or Publish
         if: env.SKIP_PUBLISH != '1'
         id: changesets
@@ -102,11 +71,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # setup-node's .npmrc uses ${NODE_AUTH_TOKEN}. Without this env
-          # the placeholder never expands and `npm publish` runs without
-          # any usable auth, giving E404 (npm's misleading way of saying
-          # "this token has no rights to publish here").
+          # `actions/setup-node` writes an .npmrc that expects the registry
+          # token in `NODE_AUTH_TOKEN`. Without this line npm publishes
+          # unauthenticated and fails with E404. Keep both vars pointed at
+          # the same secret.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # Provenance stays disabled until we move to npm Trusted
-          # Publishing (OIDC). Re-enable after that.
-          # NPM_CONFIG_PROVENANCE: "true"

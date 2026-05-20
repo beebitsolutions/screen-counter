@@ -12,6 +12,27 @@ const opts: CliOptions = {
 };
 
 describe('formatVerbose', () => {
+  it('should prepend a routes section listing path → canonical URL', () => {
+    const result: AnalysisResult = {
+      count: 2,
+      routes: [
+        { kind: 'route', path: 'app/page.tsx', route: '/', signals: [] },
+        {
+          kind: 'route',
+          path: 'app/users/[id]/page.tsx',
+          route: '/users/[id]',
+          signals: [],
+        },
+      ],
+      modals: [],
+      disabled: [],
+    };
+    const out = formatVerbose(result, opts);
+    expect(out).toMatch(/routes:/);
+    expect(out).toMatch(/app\/page\.tsx\s+→ \//);
+    expect(out).toMatch(/app\/users\/\[id\]\/page\.tsx\s+→ \/users\/\[id\]/);
+  });
+
   it('should append a modals section listing rule keys', () => {
     const result: AnalysisResult = {
       count: 1,
