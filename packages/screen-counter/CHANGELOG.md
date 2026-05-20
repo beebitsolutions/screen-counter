@@ -1,5 +1,11 @@
 # @beebit/screen-counter
 
+## 0.2.0
+
+### Minor Changes
+
+- ea75763: Extend the --verbose output of the CLI to also list every detected route with its canonical URL. The previous output only included modals and disabled components; routes were only visible via --json. Now `screen-counter . --verbose` shows the full picture in one go
+
 ## 0.1.1
 
 ### Patch Changes
