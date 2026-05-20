@@ -59,10 +59,15 @@ jobs:
       # plus the token's permissions on the @beebit scope. Useful to debug
       # 404 / 403 errors during publish. Safe to keep long-term: prints
       # user metadata only, never the token.
+      #
+      # NOTE: setup-node@v4 writes its own .npmrc and forces npm to read
+      # it via NPM_CONFIG_USERCONFIG. That file expects NODE_AUTH_TOKEN
+      # (not NPM_TOKEN) for the registry token. So every step that calls
+      # npm directly needs NODE_AUTH_TOKEN set, even if our secret is
+      # called NPM_TOKEN.
       - name: Diagnostic — npm auth status
         if: env.SKIP_PUBLISH != '1'
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > $HOME/.npmrc
           echo "::group::npm whoami"
           npm whoami || echo "whoami failed"
           echo "::endgroup::"
@@ -79,6 +84,7 @@ jobs:
           echo "::endgroup::"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Release PR or Publish
         if: env.SKIP_PUBLISH != '1'
@@ -96,10 +102,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # Provenance is disabled while we use a Granular Access Token
-          # with "Bypass 2FA" enabled. The two settings can interact in
-          # ways that make npm return E404 on the final PUT. To re-enable
-          # provenance, switch the publish auth to npm Trusted Publishing
-          # (no NPM_TOKEN needed) configured at the npmjs.com package
-          # settings, then add back `NPM_CONFIG_PROVENANCE: "true"`.
+          # setup-node's .npmrc uses ${NODE_AUTH_TOKEN}. Without this env
+          # the placeholder never expands and `npm publish` runs without
+          # any usable auth, giving E404 (npm's misleading way of saying
+          # "this token has no rights to publish here").
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Provenance stays disabled until we move to npm Trusted
+          # Publishing (OIDC). Re-enable after that.
           # NPM_CONFIG_PROVENANCE: "true"
