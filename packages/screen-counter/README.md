@@ -112,13 +112,47 @@ configured limit.
 | -------------------- | ------------------------------------------------------------------------ |
 | `--json`             | Print structured JSON to stdout (no colours, no decoration).             |
 | `--out <path>`       | Write the report to a file. Creates intermediate directories.            |
-| `--verbose`          | Per-component breakdown with the signals each one fired.                 |
+| `--verbose`          | Full per-entry breakdown: every route with its canonical URL, every modal with the signals it fired, and every manually-excluded component. |
 | `--watch`            | Recompute on file changes (`chokidar`, 150 ms debounce, clean SIGINT).   |
 | `--config <path>`    | Explicit path to a `screen-counter.config.{mjs,cjs,js}` file.            |
 | `--help` / `-h`      | Print full help.                                                         |
 | `--version` / `-v`   | Print the package version.                                               |
 
 Exit codes: `0` ok · `1` analyzer error · `2` config error.
+
+#### `--verbose` example output
+
+`npx screen-counter . --verbose` extends the regular summary with three
+fully-listed sections — useful when you need to audit the count by hand:
+
+```
+@beebit/screen-counter — analyzing /path/to/your-app
+
+✓ 12 routes
+✓ 13 modals (radix: 2, reexport:components/ui/dialog.tsx: 2, role: 2, …)
+✓ 1 component excluded manually
+─────────────────
+  25 screens total
+
+routes:
+  app/(marketing)/contact/page.tsx            → /contact
+  app/about/page.tsx                          → /about
+  app/dashboard/page.tsx                      → /dashboard
+  app/dashboard/projects/[id]/page.tsx        → /dashboard/projects/[id]
+  …
+
+modals:
+  components/DeleteProjectDialog.tsx          [strong:import:@radix-ui/react-dialog, weak:name-suffix:Dialog]
+  components/billing-history-dialog.tsx       [strong:reexport:components/ui/dialog.tsx, weak:name-suffix:Dialog]
+  components/WelcomeTourModal.tsx             [strong:jsx-attr:role=dialog, weak:name-suffix:Modal, weak:react-dom:createPortal]
+  …
+
+disabled:
+  components/InternalDebugPanel.tsx           [strong:escape-hatch:disable]
+```
+
+Each entry is annotated with the rules that fired on it (see [How counting
+works](#how-counting-works) for the full list of rule keys).
 
 ## Configuration
 

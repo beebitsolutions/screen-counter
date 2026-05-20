@@ -4,14 +4,20 @@ import { formatHuman } from './human.js';
 import { makePalette } from './palette.js';
 
 /**
- * Verbose output: the regular human summary, plus a per-component dump of
- * the raw rule keys that fired. Rule keys are printed verbatim — see
- * `documentation/dev-notes/02-heuristicas-modales.md` for the stable list.
+ * Verbose output: the regular human summary, plus a per-entry dump of every
+ * route (with its canonical URL) and every modal / disabled component (with
+ * the raw rule keys that fired). Rule keys are printed verbatim.
  */
 export function formatVerbose(result: AnalysisResult, opts: CliOptions): string {
   const c = makePalette(opts.colorEnabled);
   const head = formatHuman(result, opts).replace(/\n$/, '');
   const sections: string[] = [head, ''];
+
+  if (result.routes.length > 0) {
+    sections.push(c.bold('routes:'));
+    sections.push(...listRoutes(result.routes, c));
+    sections.push('');
+  }
 
   if (result.modals.length > 0) {
     sections.push(c.bold('modals:'));
@@ -26,6 +32,15 @@ export function formatVerbose(result: AnalysisResult, opts: CliOptions): string 
   }
 
   return `${sections.join('\n').replace(/\n+$/, '')}\n`;
+}
+
+function listRoutes(routes: ScreenInfo[], c: ReturnType<typeof makePalette>): string[] {
+  const pad = routes.reduce((m, e) => Math.max(m, e.path.length), 0);
+  return routes.map((entry) => {
+    const path = entry.path.padEnd(pad, ' ');
+    const url = entry.route ?? '';
+    return `  ${path}  ${c.dim(`→ ${url}`)}`;
+  });
 }
 
 function listEntries(entries: ScreenInfo[], c: ReturnType<typeof makePalette>): string[] {
