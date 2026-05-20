@@ -55,6 +55,31 @@ jobs:
             echo "SKIP_PUBLISH=1" >> $GITHUB_ENV
           fi
 
+      # Diagnostic — prints the npm user the NPM_TOKEN authenticates as
+      # plus the token's permissions on the @beebit scope. Useful to debug
+      # 404 / 403 errors during publish. Safe to keep long-term: prints
+      # user metadata only, never the token.
+      - name: Diagnostic — npm auth status
+        if: env.SKIP_PUBLISH != '1'
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > $HOME/.npmrc
+          echo "::group::npm whoami"
+          npm whoami || echo "whoami failed"
+          echo "::endgroup::"
+          echo "::group::npm token whoami via API"
+          curl -sS -H "Authorization: Bearer ${NPM_TOKEN}" \
+            https://registry.npmjs.org/-/whoami | head -c 500
+          echo ""
+          echo "::endgroup::"
+          echo "::group::package access — who can publish @beebit/screen-counter"
+          npm access list collaborators @beebit/screen-counter 2>&1 | head -20 || true
+          echo "::endgroup::"
+          echo "::group::package access — 2FA setting"
+          npm access get status @beebit/screen-counter 2>&1 | head -20 || true
+          echo "::endgroup::"
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create Release PR or Publish
         if: env.SKIP_PUBLISH != '1'
         id: changesets
